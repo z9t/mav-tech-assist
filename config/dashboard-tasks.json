@@ -1,0 +1,107 @@
+{
+  "tasks": [
+    {
+      "id": "beforeHire",
+      "name": "Before Hire Pack",
+      "description": "Tidy the laptop, check the baseline, then test the network.",
+      "steps": [
+        {
+          "name": "Pre-hire prep",
+          "script": "Invoke-PreHirePrep.ps1"
+        },
+        {
+          "name": "Baseline audit",
+          "script": "Invoke-BaselineAudit.ps1"
+        },
+        {
+          "name": "Network test",
+          "script": "Invoke-NetworkTest.ps1"
+        }
+      ],
+      "help": "Fix the failed step before releasing the laptop. If the network step fails, run Network Deep Diagnostics.",
+      "recommendedNextTask": "networkDiagnostics"
+    },
+    {
+      "id": "afterHire",
+      "name": "After Hire Pack",
+      "description": "Log out web services, preserve Microsoft 365, then check app drift.",
+      "steps": [
+        {
+          "name": "Declientify",
+          "script": "Invoke-Declientify.ps1"
+        },
+        {
+          "name": "Baseline audit",
+          "script": "Invoke-BaselineAudit.ps1"
+        }
+      ],
+      "help": "If declientify fails, manually check Microsoft 365 in Word or PowerPoint before running cleanup again.",
+      "recommendedNextTask": null
+    },
+    {
+      "id": "declientify",
+      "name": "Declientify Only",
+      "description": "Clear browser/web-client sessions while preserving Microsoft 365.",
+      "steps": [
+        {
+          "name": "Declientify",
+          "script": "Invoke-Declientify.ps1"
+        }
+      ],
+      "help": "Open Word or PowerPoint and check File > Account if Microsoft 365 cannot be confirmed.",
+      "recommendedNextTask": null
+    },
+    {
+      "id": "networkTest",
+      "name": "Network Test",
+      "description": "Compare active Wi-Fi and Ethernet connections against showtime.mav.z9t.me.",
+      "steps": [
+        {
+          "name": "Network test",
+          "script": "Invoke-NetworkTest.ps1"
+        }
+      ],
+      "help": "Check Wi-Fi/Ethernet connection, DNS, and whether showtime.mav.z9t.me is reachable. Run Network Deep Diagnostics for details.",
+      "recommendedNextTask": "networkDiagnostics"
+    },
+    {
+      "id": "networkDiagnostics",
+      "name": "Network Deep Diagnostics",
+      "description": "Run DNS, adapter, gateway, HTTPS, and iperf-port checks against showtime.mav.z9t.me.",
+      "steps": [
+        {
+          "name": "Network diagnostics",
+          "script": "Invoke-NetworkDiagnostics.ps1"
+        }
+      ],
+      "help": "If HTTPS works but iperf fails, check the iperf3 service and firewall on showtime.mav.z9t.me port 5201.",
+      "recommendedNextTask": null
+    },
+    {
+      "id": "preHirePrep",
+      "name": "Pre-Hire Prep Only",
+      "description": "Tidy files, set MAV wallpaper, and check disk and Microsoft 365 state.",
+      "steps": [
+        {
+          "name": "Pre-hire prep",
+          "script": "Invoke-PreHirePrep.ps1"
+        }
+      ],
+      "help": "Check the generated report for low disk space, large archived files, or Microsoft 365 warnings.",
+      "recommendedNextTask": null
+    },
+    {
+      "id": "baselineAudit",
+      "name": "Baseline Audit Only",
+      "description": "Compare installed programs against the configured baseline.",
+      "steps": [
+        {
+          "name": "Baseline audit",
+          "script": "Invoke-BaselineAudit.ps1"
+        }
+      ],
+      "help": "Update baseline-programs.json if the detected app list is expected, or uninstall unexpected client software.",
+      "recommendedNextTask": null
+    }
+  ]
+}

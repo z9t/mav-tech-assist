@@ -1,0 +1,193 @@
+{
+  "maxHostsPerScan": 256,
+  "maxPortProbeHosts": 64,
+  "pingTimeoutMs": 220,
+  "portTimeoutMs": 140,
+  "ports": [
+    {
+      "port": 22,
+      "label": "SSH"
+    },
+    {
+      "port": 80,
+      "label": "HTTP"
+    },
+    {
+      "port": 443,
+      "label": "HTTPS"
+    },
+    {
+      "port": 445,
+      "label": "SMB"
+    },
+    {
+      "port": 554,
+      "label": "RTSP"
+    },
+    {
+      "port": 631,
+      "label": "IPP"
+    },
+    {
+      "port": 9100,
+      "label": "JetDirect"
+    },
+    {
+      "port": 3389,
+      "label": "RDP"
+    },
+    {
+      "port": 4352,
+      "label": "PJLink"
+    },
+    {
+      "port": 10023,
+      "label": "Mixer Remote"
+    }
+  ],
+  "roleHints": [
+    {
+      "id": "ptz-camera",
+      "label": "PTZ camera",
+      "requiredAnyPorts": [
+        554
+      ],
+      "preferredAnyPorts": [
+        80,
+        443,
+        22
+      ],
+      "hostnamePatterns": [
+        "ptz",
+        "camera",
+        "cam",
+        "birddog",
+        "avonic",
+        "sony",
+        "panasonic",
+        "ptzoptics"
+      ]
+    },
+    {
+      "id": "projector",
+      "label": "Projector / display",
+      "requiredAnyPorts": [
+        4352
+      ],
+      "preferredAnyPorts": [
+        80,
+        443
+      ],
+      "hostnamePatterns": [
+        "proj",
+        "projector",
+        "display",
+        "screen",
+        "barco",
+        "christie",
+        "epson",
+        "nec"
+      ]
+    },
+    {
+      "id": "sound-desk",
+      "label": "Sound desk",
+      "requiredAnyPorts": [
+        10023
+      ],
+      "preferredAnyPorts": [
+        80,
+        443,
+        22
+      ],
+      "hostnamePatterns": [
+        "mixer",
+        "desk",
+        "sound",
+        "audio",
+        "x32",
+        "m32",
+        "yamaha",
+        "ql",
+        "cl"
+      ]
+    },
+    {
+      "id": "windows-pc",
+      "label": "Windows PC",
+      "requiredAnyPorts": [
+        3389,
+        445
+      ],
+      "preferredAnyPorts": [
+        80,
+        443
+      ],
+      "hostnamePatterns": [
+        "pc",
+        "laptop",
+        "show",
+        "ppt",
+        "notes"
+      ]
+    },
+    {
+      "id": "nas",
+      "label": "NAS / file share",
+      "requiredAnyPorts": [
+        445
+      ],
+      "preferredAnyPorts": [
+        22,
+        80,
+        443
+      ],
+      "hostnamePatterns": [
+        "nas",
+        "file",
+        "files",
+        "synology",
+        "qnap"
+      ]
+    },
+    {
+      "id": "printer",
+      "label": "Printer",
+      "requiredAnyPorts": [
+        631,
+        9100
+      ],
+      "preferredAnyPorts": [
+        80,
+        443
+      ],
+      "hostnamePatterns": [
+        "print",
+        "printer",
+        "xerox",
+        "canon",
+        "hp"
+      ]
+    },
+    {
+      "id": "web-managed-av",
+      "label": "AV / control endpoint",
+      "requiredAnyPorts": [
+        80,
+        443
+      ],
+      "preferredAnyPorts": [
+        22
+      ],
+      "hostnamePatterns": [
+        "av",
+        "control",
+        "encoder",
+        "decoder",
+        "switch",
+        "crestron",
+        "qsys"
+      ]
+    }
+  ]
+}

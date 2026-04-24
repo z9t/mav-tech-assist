@@ -1,0 +1,28 @@
+{
+  "requiredPatterns": [
+    "Microsoft 365",
+    "Microsoft Edge",
+    "Google Chrome"
+  ],
+  "optionalPatterns": [
+    "Zoom",
+    "VLC media player",
+    "Adobe Acrobat",
+    "7-Zip"
+  ],
+  "ignorePatterns": [
+    "Microsoft Visual C++",
+    "Update for",
+    "Security Update",
+    "Microsoft Windows Desktop Runtime",
+    "Microsoft ASP.NET",
+    "Microsoft OneDrive",
+    "Intel",
+    "Realtek",
+    "NVIDIA",
+    "Dell",
+    "HP",
+    "Lenovo",
+    "Synaptics"
+  ]
+}

@@ -1,0 +1,8 @@
+# MAV Tech Assist has no required Python packages for core use.
+# This file exists so common deploy and packaging workflows that expect a
+# requirements.txt can run cleanly.
+#
+# Core runtime requirements are:
+# - Windows PowerShell 5.1 or later
+# - Optional static hosting for the browser portal
+# - Optional iperf3 server on TCP 5201 for throughput tests

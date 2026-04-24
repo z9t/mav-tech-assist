@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Tech Assist Troubleshooting Guide</title>
+  <link rel="stylesheet" href="handbook.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="top-row">
+        <span class="pill">Troubleshooting Guide</span>
+        <div class="button-row">
+          <a id="portalLink" class="button" href="/">Back to MAV Tech Assist</a>
+          <a class="button secondary" href="TROUBLESHOOTING_GUIDE.md">Open markdown source</a>
+        </div>
+      </div>
+      <div>
+        <h1>Troubleshooting Guide</h1>
+        <p class="lead">This is the fast decision path for operators. The goal is not to diagnose everything. The goal is to switch to the safe fallback quickly and know when to escalate.</p>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Hosted Site Will Not Open</h2>
+        <ol>
+          <li>Open <code>https://showtime.mav.z9t.me</code> again.</li>
+          <li>If it still fails, switch to <code>launchers\\0-Offline-Browser-Portal.cmd</code>.</li>
+          <li>If the USB copy works, the issue is probably internet or hosting, not the browser tools.</li>
+        </ol>
+        <p class="lead">Escalate if the hosted site is down for more than a few minutes, or if the USB copy also fails to open.</p>
+      </article>
+
+      <article class="card">
+        <h2>Browser Page Opens But Buttons Do Nothing</h2>
+        <ul>
+          <li>Check whether you are on the hosted site, USB offline site, or local helper site.</li>
+          <li>Remember that browser pages can open generators, timers, and display tools directly.</li>
+          <li>Windows script actions only work through <code>launchers\\0-Dashboard.cmd</code>.</li>
+        </ul>
+        <h3>If a Windows button is missing or greyed out</h3>
+        <ol>
+          <li>open <code>launchers\\0-Dashboard.cmd</code></li>
+          <li>wait for the local page to load</li>
+          <li>try the task again from that dashboard</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Download USB Zip Is Missing Or Fails</h2>
+        <ul>
+          <li>make sure you are on the hosted site, not the USB copy</li>
+          <li>check that the file name is <code>MAV-Tech-Assist-USB.zip</code></li>
+        </ul>
+        <ol>
+          <li>refresh the page once</li>
+          <li>try the direct file link again</li>
+          <li>if it still fails, use the current USB copy you already have and escalate for a hosted update</li>
+        </ol>
+      </article>
+
+      <article class="card callout">
+        <h2>Event Timer Shows The Wrong Old Show Name</h2>
+        <p>This usually means the browser kept the last saved timer values.</p>
+        <ol>
+          <li>open <code>Event timer</code></li>
+          <li>click <code>Clear saved settings</code></li>
+          <li>enter the current show details again</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Timer Is Red Immediately</h2>
+        <p>This is often expected, not a bug.</p>
+        <ul>
+          <li>check whether the target time is already passed</li>
+          <li>check whether the duration is only a few seconds or minutes</li>
+          <li>check whether you are already in overtime</li>
+        </ul>
+        <ol>
+          <li>click <code>Reset</code></li>
+          <li>set the correct target time or duration</li>
+          <li>click <code>Start</code> again</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Dashboard Opens But Scripts Fail</h2>
+        <ol>
+          <li>read the fail or warning text in the dashboard</li>
+          <li>open the matching JSON report in <code>reports\\</code></li>
+          <li>check whether the problem is a missing tool, low disk space, missing permissions, or network reachability</li>
+        </ol>
+        <h3>Common reasons</h3>
+        <ul>
+          <li>the bundled <code>iperf3.exe</code> or its companion DLLs are missing from <code>tools\\</code></li>
+          <li>the hosted test server cannot be reached</li>
+          <li>the laptop needs admin rights for a setup change</li>
+          <li>disk space is too low for cleanup or archiving</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Network Helper Shows Strange Device Names</h2>
+        <p>This is expected sometimes. The helper fingerprints devices by best-effort clues only, so trust the up/down state more than the guessed device type.</p>
+        <ol>
+          <li>use discovery to find likely devices</li>
+          <li>rename important watch-list entries manually if needed</li>
+          <li>rely on the IP and status more than the guessed category</li>
+        </ol>
+      </article>
+
+      <article class="card warning">
+        <h2>When To Stop And Escalate</h2>
+        <ul>
+          <li>the same tool fails twice in a row</li>
+          <li>the hosted site and USB copy both fail</li>
+          <li>a Windows setup step asks for admin rights and you do not expect it</li>
+          <li>a script says a required executable is missing</li>
+          <li>a script says the bundled <code>iperf3</code> files are incomplete</li>
+          <li>a report shows unexpected app drift, repeated low disk warnings, or unresolved network reachability issues</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+  <script>
+    const portalLink = document.getElementById('portalLink');
+    portalLink.href = location.protocol === 'file:' ? '../web/index.html' : '/';
+  </script>
+</body>
+</html>

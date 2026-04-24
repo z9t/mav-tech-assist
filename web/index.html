@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Tech Assist Portal</title>
+  <style>
+    :root {
+      --bg: #060606;
+      --panel: #171717;
+      --panel-2: #222222;
+      --text: #f7f1df;
+      --muted: #b8b09c;
+      --brand: #ffd84d;
+      --ok: #3fd079;
+      --warn: #ffbd4a;
+      --bad: #ff5c5c;
+      --line: rgba(255, 255, 255, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(255, 216, 77, 0.18), transparent 24rem),
+        radial-gradient(circle at 90% 12%, rgba(63, 208, 121, 0.12), transparent 28rem),
+        linear-gradient(135deg, #020202, var(--bg) 60%, #151208);
+      font-family: Aptos, Segoe UI, Tahoma, sans-serif;
+    }
+
+    main {
+      width: min(1240px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 26px;
+      align-items: end;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(38px, 6vw, 82px);
+      line-height: 0.9;
+      letter-spacing: -0.07em;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.48;
+    }
+
+    .pill {
+      border: 1px solid rgba(255, 216, 77, 0.4);
+      border-radius: 999px;
+      color: var(--brand);
+      padding: 10px 14px;
+      background: rgba(255, 216, 77, 0.08);
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+      min-height: 244px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)), var(--panel);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+    }
+
+    .card-copy {
+      display: grid;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .card.disabled {
+      opacity: 0.42;
+      filter: grayscale(0.82);
+    }
+
+    .card.disabled a.button {
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .card strong {
+      color: var(--text);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    a.button,
+    span.button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 11px 14px;
+      border-radius: 13px;
+      color: #171300;
+      background: var(--brand);
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    a.button.secondary,
+    span.button.secondary {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    button.button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 11px 14px;
+      border: 0;
+      border-radius: 13px;
+      color: #171300;
+      background: var(--brand);
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.button.secondary {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    button.button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .note {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 189, 74, 0.35);
+      background: rgba(255, 189, 74, 0.09);
+      color: #ffe1a5;
+      line-height: 1.45;
+    }
+
+    .device-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .status-item {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 15px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: start;
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .tag.web {
+      color: var(--ok);
+      background: rgba(63, 208, 121, 0.12);
+    }
+
+    .tag.launcher {
+      color: var(--warn);
+      background: rgba(255, 189, 74, 0.12);
+    }
+
+    .tag.online {
+      color: #9cc7ff;
+      background: rgba(80, 150, 255, 0.12);
+    }
+
+    code {
+      color: #fff2b7;
+    }
+
+    .helper-panel {
+      display: none;
+      margin-top: 14px;
+    }
+
+    .helper-panel.show {
+      display: block;
+    }
+
+    .progress {
+      height: 14px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #0b0b0b;
+      border: 1px solid var(--line);
+      margin-top: 12px;
+    }
+
+    .bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand), var(--ok));
+      transition: width 220ms ease;
+    }
+
+    .step-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 32px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 13px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .step-icon {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--panel-2);
+      font-weight: 950;
+    }
+
+    .step.success .step-icon {
+      color: var(--ok);
+      background: rgba(63, 208, 121, 0.12);
+    }
+
+    .step.error .step-icon {
+      color: var(--bad);
+      background: rgba(255, 92, 92, 0.12);
+    }
+
+    .step.running .step-icon {
+      color: var(--brand);
+      background: rgba(255, 216, 77, 0.12);
+    }
+
+    @media (max-width: 760px) {
+      header {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>MAV Tech Assist</h1>
+        <p>One browser-based toolkit for online use, USB offline fallback, and Windows helper-backed full tests.</p>
+      </div>
+      <div class="pill" id="modePill">Browser mode</div>
+    </header>
+
+    <section class="note" id="modeNote">
+      Browser-only pages can run directly from this site whether hosted or opened from the USB. Full Windows checks become available when this same site is served by the USB local helper.
+    </section>
+
+    <div id="deviceNote" class="device-note"></div>
+
+    <section class="grid" id="availableTests">
+      <article class="card test-card" data-device="all">
+        <div class="card-copy">
+          <h2 id="runOnlineTitle">Run Online</h2>
+          <p>Open the hosted test app when internet is available. This is the easiest path for phones, tablets, and quick display or network checks.</p>
+        </div>
+        <div class="actions">
+          <a id="onlineOpen" class="button" href="https://showtime.mav.z9t.me/">Open showtime.mav.z9t.me</a>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="all">
+        <div class="card-copy">
+          <h2 id="usbTitle">Or from USB</h2>
+          <p>Download the full USB toolkit zip with the launchers, scripts, browser pages, docs, and config needed to build or refresh a stick.</p>
+        </div>
+        <div class="actions">
+          <a id="bundleDownload" class="button" href="MAV-Tech-Assist-USB.zip" download>Download USB zip</a>
+          <span id="bundleLocalState" class="button secondary" style="display: none;">Already in local bundle</span>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="laptop" id="windowsChecksCard">
+        <div class="card-copy">
+          <h2>Full Windows checks</h2>
+          <p id="windowsChecksText">Use this for declientify, Microsoft 365 checks, network tests, cleanup, and baseline audits. Start <strong>launchers\0-Dashboard.cmd</strong> from File Explorer to enable script buttons.</p>
+        </div>
+        <div class="actions" id="windowsHelperActions" style="display: none;">
+          <button class="button" data-task="beforeHire">Before Hire</button>
+          <button class="button" data-task="afterHire">After Hire</button>
+          <button class="button secondary" data-task="networkTest">Network</button>
+          <button class="button secondary" data-task="networkDiagnostics">Network Diagnostics</button>
+        </div>
+        <div class="actions" id="windowsFallbackActions">
+          <a class="button secondary" href="../launchers/">Open launchers folder</a>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="all">
+        <div class="card-copy">
+          <h2>Desktop generator</h2>
+          <p>Clean branded output ID screen for the right laptop, notes feed, sponsor loop, confidence monitor, or comfort screen, with MAV logo and optional client logo.</p>
+        </div>
+        <div class="actions">
+          <a class="button" href="desktop-generator.html">Open desktop generator</a>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="all">
+        <div class="card-copy">
+          <h2>Test pattern generator</h2>
+          <p>General display test patterns for alignment, safe margins, overscan, colour bars, focus checks, and making sure the correct source is routed to the correct display.</p>
+        </div>
+        <div class="actions">
+          <a class="button" href="test-pattern-generator.html">Open test pattern generator</a>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="all">
+        <div class="card-copy">
+          <h2>Event timer</h2>
+          <p>Fullscreen countdown or count-up timer for show starts, doors, stage cues, rehearsals, and session changes, with MAV logo control and optional client logo upload.</p>
+        </div>
+        <div class="actions">
+          <a class="button" href="event-timer.html">Open event timer</a>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="all">
+        <div class="card-copy">
+          <h2>LED wall test</h2>
+          <p>Numbered coloured panel grid with panel counts, cabinet pixel size, cabinet physical size, total wall dimensions, client/device labels, MAV logo, and optional client logo upload.</p>
+        </div>
+        <div class="actions">
+          <a class="button" href="led-wall-test-generator.html">Open LED wall generator</a>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="laptop">
+        <div class="card-copy">
+          <h2>Local network helper</h2>
+          <p>Ask a few setup questions, optionally prepare local SSH and file-sharing prerequisites on the Windows laptop, scan the subnet, then keep a red/green watch table running for AV devices that matter.</p>
+        </div>
+        <div class="actions">
+          <a class="button" href="network-helper.html" target="_blank" rel="noopener">Open network helper</a>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="mobile">
+        <div class="card-copy">
+          <h2>Phone quick tests</h2>
+          <p>Use a phone or tablet for Wi-Fi spot checks, room audio tests, microphone-based checks, and quick display confirmation via the hosted app.</p>
+        </div>
+        <div class="actions">
+          <a class="button" href="https://showtime.mav.z9t.me/">Open phone tests</a>
+        </div>
+      </article>
+
+      <article class="card test-card" data-device="all">
+        <div class="card-copy">
+          <h2>Offline documentation</h2>
+          <p>Open the non-technical daily-use, troubleshooting, and deployment guides, plus the deeper technical notes when needed.</p>
+        </div>
+        <div class="actions">
+          <a class="button secondary" href="../docs/daily-use.html">Daily use</a>
+          <a class="button secondary" href="../docs/troubleshooting.html">Troubleshooting</a>
+          <a class="button secondary" href="../docs/deployment-and-qa.html">Deployment & QA</a>
+          <a class="button secondary" href="../docs/README.md">README</a>
+          <a class="button secondary" href="../docs/LOCAL_NETWORK_HELPER.md">Network helper</a>
+        </div>
+      </article>
+    </section>
+
+    <section id="helperPanel" class="card helper-panel">
+      <h2 id="helperTitle">Windows task</h2>
+      <p id="helperState">Waiting.</p>
+      <div class="progress"><div class="bar" id="helperProgress"></div></div>
+      <div class="step-list" id="helperSteps"></div>
+      <div class="note" id="helperHelp" style="display: none;"></div>
+    </section>
+
+    <section id="notForThisDevice" class="card" style="display: none; margin-top: 14px;">
+      <h2>Not for this device</h2>
+      <p>These are dimmed because the user agent looks like the wrong class of device. Use a mobile/tablet or laptop/desktop as suggested.</p>
+      <div class="grid" id="disabledTests"></div>
+    </section>
+
+    <section class="card" style="margin-top: 14px;">
+      <h2>What runs where</h2>
+      <div class="status-list">
+        <div class="status-item">
+          <span class="tag web">Browser</span>
+          <p>Event timers, LED wall generator, display test patterns, white noise, tone tests, logo upload previews, and simple network speed tests can run in a browser.</p>
+        </div>
+        <div class="status-item">
+          <span class="tag launcher">Launcher</span>
+          <p>Declientify, Microsoft 365 state checks, installed-program baseline audits, local file cleanup, full PC network diagnostics, and the local network helper's Windows-side scan/setup actions need the USB launchers.</p>
+        </div>
+        <div class="status-item">
+          <span class="tag online">Online</span>
+          <p>Phone tests, hosted speed tests, streaming checks, WebRTC checks, and any server-backed report sharing should use <code>showtime.mav.z9t.me</code>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const helperConfig = window.MAV_LOCAL_HELPER || null;
+    let helperPollTimer = null;
+
+    function detectDeviceKind() {
+      const ua = navigator.userAgent || '';
+      const touch = navigator.maxTouchPoints || 0;
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && touch > 1);
+      const isMobile = isAndroid || isIOS || /Mobile/i.test(ua);
+      const isTablet = /iPad|Tablet/i.test(ua) || (isAndroid && !/Mobile/i.test(ua));
+
+      if (isIOS) return { kind: isTablet ? 'tablet-ios' : 'phone-ios', className: 'mobile' };
+      if (isAndroid) return { kind: isTablet ? 'tablet-android' : 'phone-android', className: 'mobile' };
+      if (isMobile) return { kind: 'phone', className: 'mobile' };
+      return { kind: 'laptop-desktop', className: 'laptop' };
+    }
+
+    function isSupported(card, deviceClass) {
+      const support = card.dataset.device || 'all';
+      if (support === 'all') return true;
+      if (support === 'desktop' || support === 'laptop') return deviceClass === 'laptop';
+      if (support === 'phone' || support === 'mobile') return deviceClass === 'mobile';
+      return true;
+    }
+
+    function applyDeviceFiltering() {
+      const device = detectDeviceKind();
+      const label = device.kind.replace('-', ' ');
+      const available = document.getElementById('availableTests');
+      const disabled = document.getElementById('disabledTests');
+      const disabledSection = document.getElementById('notForThisDevice');
+      const note = document.getElementById('deviceNote');
+      const cards = Array.from(document.querySelectorAll('.test-card'));
+
+      note.textContent = `Detected user agent: ${label}. Showing ${device.className} tests first and moving the other class into the greyed-out area.`;
+      disabled.innerHTML = '';
+
+      for (const card of cards) {
+        if (isSupported(card, device.className)) {
+          card.classList.remove('disabled');
+          available.appendChild(card);
+        } else {
+          card.classList.add('disabled');
+          disabled.appendChild(card);
+        }
+      }
+
+      disabledSection.style.display = disabled.children.length > 0 ? 'block' : 'none';
+    }
+
+    function iconForState(state) {
+      if (state === 'success') return '\\u2713';
+      if (state === 'error') return '!';
+      if (state === 'running') return '...';
+      return '-';
+    }
+
+    function setInitialMode() {
+      const pill = document.getElementById('modePill');
+      const note = document.getElementById('modeNote');
+      const runOnlineTitle = document.getElementById('runOnlineTitle');
+      const usbTitle = document.getElementById('usbTitle');
+      const bundleDownload = document.getElementById('bundleDownload');
+      const bundleLocalState = document.getElementById('bundleLocalState');
+
+      runOnlineTitle.textContent = 'Run Online';
+      usbTitle.textContent = 'Or from USB';
+      bundleDownload.style.display = 'inline-flex';
+      bundleLocalState.style.display = 'none';
+      bundleDownload.removeAttribute('aria-disabled');
+
+      if (window.location.protocol === 'file:') {
+        document.title = 'MAV Tech Assist USB Portal';
+        pill.textContent = 'USB offline site';
+        note.textContent = 'This is the same browser site opened directly from the USB. Browser tests work offline; laptop script actions need the USB dashboard/helper launcher.';
+        usbTitle.textContent = 'Or from USB (here)';
+        bundleDownload.style.display = 'none';
+        bundleLocalState.style.display = 'inline-flex';
+        bundleLocalState.textContent = 'Already in local bundle';
+        return;
+      }
+
+      if (window.location.hostname === 'showtime.mav.z9t.me') {
+        document.title = 'MAV Tech Assist Hosted Portal';
+        pill.textContent = 'Hosted site';
+        note.textContent = 'This is the hosted browser site. Mobile and browser-safe tests run here. Laptop script actions need the USB helper if you want local Windows checks.';
+        runOnlineTitle.textContent = 'Run Online (here)';
+        document.getElementById('windowsFallbackActions').innerHTML = '<span class="button secondary">Use USB: launchers\\0-Dashboard.cmd</span>';
+        bundleDownload.href = 'MAV-Tech-Assist-USB.zip';
+        return;
+      }
+
+      if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+        document.title = 'MAV Tech Assist Local Portal';
+        pill.textContent = 'Local browser site';
+        note.textContent = 'This is the USB site served locally. Browser tests run here; laptop script actions become available if the helper is connected.';
+        usbTitle.textContent = 'Or from USB (here)';
+        bundleDownload.style.display = 'none';
+        bundleLocalState.style.display = 'inline-flex';
+        bundleLocalState.textContent = 'Use the files already on this USB';
+      }
+    }
+
+    function helperUrl(path, params = {}) {
+      const base = helperConfig && helperConfig.baseUrl ? helperConfig.baseUrl : '';
+      const url = new URL(path, base || window.location.href);
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== null && value !== undefined) {
+          url.searchParams.set(key, value);
+        }
+      }
+      return url.toString();
+    }
+
+    function enableWindowsHelper() {
+      if (!helperConfig || !helperConfig.token) return;
+
+      document.getElementById('modePill').textContent = 'USB helper connected';
+      document.getElementById('modeNote').textContent = 'This is the same browser site with the USB local helper enabled. Browser tests run here, and Windows script buttons can now call the local PowerShell task runner.';
+      document.getElementById('windowsChecksText').textContent = 'USB helper is running. Use these buttons to run the Windows scripts with progress, pass/fail status, and follow-up help.';
+      document.getElementById('windowsHelperActions').style.display = 'flex';
+      document.getElementById('windowsFallbackActions').style.display = 'none';
+
+      for (const button of document.querySelectorAll('[data-task]')) {
+        button.addEventListener('click', () => runHelperTask(button.dataset.task));
+      }
+    }
+
+    function setTaskButtonsDisabled(disabled) {
+      for (const button of document.querySelectorAll('[data-task]')) {
+        button.disabled = disabled;
+      }
+    }
+
+    async function runHelperTask(taskId) {
+      if (!helperConfig || !helperConfig.token) return;
+
+      setTaskButtonsDisabled(true);
+      const panel = document.getElementById('helperPanel');
+      panel.classList.add('show');
+      document.getElementById('helperTitle').textContent = 'Starting task...';
+      document.getElementById('helperState').textContent = 'Queued.';
+      document.getElementById('helperProgress').style.width = '0%';
+      document.getElementById('helperSteps').innerHTML = '';
+      document.getElementById('helperHelp').style.display = 'none';
+
+      const response = await fetch(helperUrl('/api/run', { task: taskId, token: helperConfig.token }), { method: 'POST' });
+      const data = await response.json();
+      if (!response.ok) {
+        setTaskButtonsDisabled(false);
+        document.getElementById('helperTitle').textContent = 'Could not start';
+        document.getElementById('helperState').textContent = data.error || 'Unknown error.';
+        return;
+      }
+
+      pollHelperStatus(data.runId || data.RunId);
+    }
+
+    async function pollHelperStatus(runId) {
+      if (helperPollTimer) clearTimeout(helperPollTimer);
+      const response = await fetch(helperUrl('/api/status', { runId }));
+      const status = await response.json();
+      renderHelperStatus(status);
+      const state = status.state || status.State;
+
+      if (state === 'running' || state === 'queued') {
+        helperPollTimer = setTimeout(() => pollHelperStatus(runId), 1000);
+        return;
+      }
+
+      setTaskButtonsDisabled(false);
+    }
+
+    function renderHelperStatus(status) {
+      const state = status.state || status.State || 'running';
+      const percent = status.percent ?? status.Percent ?? 0;
+      const steps = status.steps || status.Steps || [];
+      const name = status.name || status.Name || 'Windows task';
+      const help = status.help || status.Help || '';
+
+      document.getElementById('helperTitle').textContent = name;
+      document.getElementById('helperState').textContent = `Status: ${state}`;
+      document.getElementById('helperProgress').style.width = `${percent}%`;
+
+      const stepsElement = document.getElementById('helperSteps');
+      stepsElement.innerHTML = '';
+      for (const step of steps) {
+        const stepState = step.state || step.State || 'pending';
+        const stepName = step.name || step.Name || 'Step';
+        const stepScript = step.script || step.Script || '';
+        const exitCode = step.exitCode ?? step.ExitCode;
+        const row = document.createElement('div');
+        row.className = `step ${stepState}`;
+        row.innerHTML = `
+          <span class="step-icon">${iconForState(stepState)}</span>
+          <div><strong>${stepName}</strong><p>${stepScript}</p></div>
+          <span>${exitCode === null || exitCode === undefined ? '' : 'exit ' + exitCode}</span>
+        `;
+        stepsElement.appendChild(row);
+      }
+
+      const helpElement = document.getElementById('helperHelp');
+      if (state === 'failed' && help) {
+        helpElement.textContent = help;
+        helpElement.style.display = 'block';
+      } else {
+        helpElement.style.display = 'none';
+      }
+    }
+
+    setInitialMode();
+    enableWindowsHelper();
+    applyDeviceFiltering();
+  </script>
+</body>
+</html>

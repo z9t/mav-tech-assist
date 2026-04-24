@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Tech Assist LED Wall Test Generator</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: #151515;
+      --panel-2: #202020;
+      --text: #f7f1df;
+      --muted: #b7af9a;
+      --brand: #ffd84d;
+      --danger: #ff5c5c;
+      --ok: #3fd079;
+      --line: rgba(255, 255, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255, 216, 77, 0.16), transparent 24rem),
+        radial-gradient(circle at 92% 20%, rgba(63, 208, 121, 0.12), transparent 26rem),
+        #050505;
+      font-family: Aptos, Segoe UI, Tahoma, sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      padding: 22px;
+      background: rgba(10, 10, 10, 0.92);
+      border-right: 1px solid var(--line);
+      overflow: auto;
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px;
+      display: grid;
+      place-items: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: var(--text);
+      background: var(--panel);
+      font: inherit;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 14px;
+      color: #171300;
+      background: var(--brand);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    .hint {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255, 216, 77, 0.08);
+      border: 1px solid rgba(255, 216, 77, 0.25);
+      color: #fff0a8;
+      font-size: 13px;
+    }
+
+    .warning {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255, 92, 92, 0.12);
+      border: 1px solid rgba(255, 92, 92, 0.32);
+      color: #ffd6d6;
+      font-size: 13px;
+    }
+
+    .warning.show {
+      display: block;
+    }
+
+    .stage-shell {
+      width: min(100%, 1500px);
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 2px solid #ffffff;
+      background: #000;
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.48);
+    }
+
+    .stage.fullscreen {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      border: 0;
+    }
+
+    .meta {
+      position: absolute;
+      z-index: 4;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 22px;
+      pointer-events: none;
+    }
+
+    .info-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .info-chip {
+      display: none;
+      max-width: min(60vw, 960px);
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: clamp(14px, 1.3vw, 24px);
+      line-height: 1.2;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+    }
+
+    .info-chip.show {
+      display: block;
+    }
+
+    .logos {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 18px;
+      min-height: 70px;
+    }
+
+    .mav-logo {
+      max-width: 210px;
+      max-height: 80px;
+      object-fit: contain;
+      transform: translateX(clamp(140px, 12vw, 210px));
+    }
+
+    .client-logo {
+      display: none;
+      max-width: 210px;
+      max-height: 80px;
+      object-fit: contain;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      z-index: 1;
+    }
+
+    .panel {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 0;
+      border: 2px solid rgba(0, 0, 0, 0.72);
+      outline: 1px solid rgba(255, 255, 255, 0.78);
+      color: #fff;
+      font-weight: 950;
+      text-align: center;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+    }
+
+    .panel-copy {
+      padding: 0.45em 0.6em;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.44);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(6px);
+    }
+
+    .panel.partial {
+      box-shadow: inset 0 0 0 8px rgba(255, 92, 92, 0.7);
+    }
+
+    .panel-index {
+      font-size: clamp(16px, 2.2vw, 72px);
+      line-height: 0.9;
+    }
+
+    .panel-detail {
+      margin-top: 0.35em;
+      font-size: clamp(8px, 0.82vw, 22px);
+      opacity: 0.95;
+      line-height: 1.18;
+    }
+
+    .pixel-border {
+      position: absolute;
+      inset: 28px;
+      border: 3px dashed rgba(255, 255, 255, 0.78);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .center-cross {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent calc(50% - 1px), #fff calc(50% - 1px), #fff calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(0deg, transparent calc(50% - 1px), #fff calc(50% - 1px), #fff calc(50% + 1px), transparent calc(50% + 1px));
+      mix-blend-mode: difference;
+    }
+
+    .footer {
+      position: absolute;
+      z-index: 4;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 22px;
+      color: #fff;
+      font-size: clamp(12px, 1vw, 20px);
+      text-shadow: 0 1px 7px rgba(0, 0, 0, 0.95);
+      pointer-events: none;
+    }
+
+    .footer > span {
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (display-mode: fullscreen) {
+      aside {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <h1>LED Wall Test Generator</h1>
+      <p>Generate a numbered, coloured panel grid for LED wall build checks, processor mapping, scaling, and source identification.</p>
+
+      <label for="clientName">Client name</label>
+      <input id="clientName" placeholder="Client / event name">
+
+      <label for="deviceName">Device / location label</label>
+      <input id="deviceName" placeholder="Main PPT laptop 1">
+
+      <div class="row">
+        <div>
+          <label for="panelColumns">Panels across</label>
+          <input id="panelColumns" type="number" min="1" value="10">
+        </div>
+        <div>
+          <label for="panelRows">Panels high</label>
+          <input id="panelRows" type="number" min="1" value="10">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="panelWidth">Panel width px</label>
+          <input id="panelWidth" type="number" min="1" value="192">
+        </div>
+        <div>
+          <label for="panelHeight">Panel height px</label>
+          <input id="panelHeight" type="number" min="1" value="108">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="panelWidthMm">Panel width mm</label>
+          <input id="panelWidthMm" type="number" min="1" value="500">
+        </div>
+        <div>
+          <label for="panelHeightMm">Panel height mm</label>
+          <input id="panelHeightMm" type="number" min="1" value="500">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="outputWidth">Calculated output width px</label>
+          <input id="outputWidth" type="number" min="1" value="1920" readonly>
+        </div>
+        <div>
+          <label for="outputHeight">Calculated output height px</label>
+          <input id="outputHeight" type="number" min="1" value="1080" readonly>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="wallWidthMm">Calculated wall width mm</label>
+          <input id="wallWidthMm" type="number" min="1" value="5000" readonly>
+        </div>
+        <div>
+          <label for="wallHeightMm">Calculated wall height mm</label>
+          <input id="wallHeightMm" type="number" min="1" value="5000" readonly>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="numberStart">First panel number</label>
+          <input id="numberStart" type="number" value="1">
+        </div>
+        <div>
+          <label for="patternMode">Colour mode</label>
+          <select id="patternMode">
+            <option value="rainbow">Rainbow panels</option>
+            <option value="checker">Checkerboard</option>
+            <option value="quadrant">Quadrants</option>
+            <option value="calibration">Calibration</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="numberOrder">Numbering order</label>
+      <select id="numberOrder">
+        <option value="row">Left to right, top to bottom</option>
+        <option value="column">Top to bottom, left to right</option>
+        <option value="snake">Snake rows</option>
+      </select>
+
+      <label for="clientLogo">Client logo</label>
+      <input id="clientLogo" type="file" accept="image/*">
+
+      <div class="button-row">
+        <button id="generateButton">Generate</button>
+        <button id="fullscreenButton" class="secondary">Fullscreen</button>
+      </div>
+
+      <div id="warning" class="warning"></div>
+      <div class="hint">Tip: set how many panels wide and high the wall is, then set the cabinet pixel size. The calculated output canvas updates automatically from those values.</div>
+    </aside>
+
+    <main>
+      <div class="stage-shell">
+        <section id="stage" class="stage" aria-label="LED wall test pattern">
+          <div id="grid" class="grid"></div>
+          <div class="center-cross"></div>
+          <div class="pixel-border"></div>
+          <div class="meta">
+            <div class="info-stack">
+              <div id="clientChip" class="info-chip"></div>
+              <div id="deviceChip" class="info-chip"></div>
+            </div>
+            <div class="logos">
+              <img class="mav-logo" alt="MAV logo" src="https://mav.com.au/wp-content/uploads/2022/09/logo-yw-1.png">
+              <img id="clientLogoPreview" class="client-logo" alt="Client logo">
+            </div>
+          </div>
+          <div class="footer">
+            <span id="footerLeft">1920x1080 output</span>
+            <span id="footerRight">192x108 panels</span>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const elements = {
+      clientName: document.getElementById('clientName'),
+      deviceName: document.getElementById('deviceName'),
+      panelColumns: document.getElementById('panelColumns'),
+      panelRows: document.getElementById('panelRows'),
+      panelWidth: document.getElementById('panelWidth'),
+      panelHeight: document.getElementById('panelHeight'),
+      panelWidthMm: document.getElementById('panelWidthMm'),
+      panelHeightMm: document.getElementById('panelHeightMm'),
+      outputWidth: document.getElementById('outputWidth'),
+      outputHeight: document.getElementById('outputHeight'),
+      wallWidthMm: document.getElementById('wallWidthMm'),
+      wallHeightMm: document.getElementById('wallHeightMm'),
+      numberStart: document.getElementById('numberStart'),
+      numberOrder: document.getElementById('numberOrder'),
+      patternMode: document.getElementById('patternMode'),
+      clientLogo: document.getElementById('clientLogo'),
+      clientLogoPreview: document.getElementById('clientLogoPreview'),
+      generateButton: document.getElementById('generateButton'),
+      fullscreenButton: document.getElementById('fullscreenButton'),
+      stage: document.getElementById('stage'),
+      grid: document.getElementById('grid'),
+      clientChip: document.getElementById('clientChip'),
+      deviceChip: document.getElementById('deviceChip'),
+      footerLeft: document.getElementById('footerLeft'),
+      footerRight: document.getElementById('footerRight'),
+      warning: document.getElementById('warning')
+    };
+
+    const rainbow = [
+      '#e53935',
+      '#fb8c00',
+      '#fdd835',
+      '#43a047',
+      '#00acc1',
+      '#1e88e5',
+      '#5e35b1',
+      '#d81b60'
+    ];
+
+    function readNumber(input, fallback) {
+      const value = Number.parseInt(input.value, 10);
+      return Number.isFinite(value) && value > 0 ? value : fallback;
+    }
+
+    function readMeasurement(input, fallback) {
+      const value = Number.parseFloat(input.value);
+      return Number.isFinite(value) && value > 0 ? value : fallback;
+    }
+
+    function getPanelNumber(row, column, rows, columns, start, mode) {
+      if (mode === 'column') {
+        return start + (column * rows) + row;
+      }
+
+      if (mode === 'snake') {
+        const offset = row % 2 === 0 ? column : columns - column - 1;
+        return start + (row * columns) + offset;
+      }
+
+      return start + (row * columns) + column;
+    }
+
+    function getPanelColour(row, column, rows, columns, mode) {
+      if (mode === 'checker') {
+        return (row + column) % 2 === 0 ? '#f7f1df' : '#111111';
+      }
+
+      if (mode === 'quadrant') {
+        if (row < rows / 2 && column < columns / 2) return '#e53935';
+        if (row < rows / 2 && column >= columns / 2) return '#1e88e5';
+        if (row >= rows / 2 && column < columns / 2) return '#43a047';
+        return '#fdd835';
+      }
+
+      if (mode === 'calibration') {
+        const x = columns <= 1 ? 0 : column / (columns - 1);
+        const y = rows <= 1 ? 0 : row / (rows - 1);
+        const red = Math.round(255 * x);
+        const green = Math.round(255 * y);
+        const blue = Math.round(255 * (1 - x));
+        return `rgb(${red}, ${green}, ${blue})`;
+      }
+
+      return rainbow[(row + column) % rainbow.length];
+    }
+
+    function updateLogo(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        elements.clientLogoPreview.style.display = 'none';
+        elements.clientLogoPreview.removeAttribute('src');
+        return;
+      }
+
+      elements.clientLogoPreview.src = URL.createObjectURL(file);
+      elements.clientLogoPreview.style.display = 'block';
+    }
+
+    function updateChip(element, value) {
+      if (!value) {
+        element.textContent = '';
+        element.classList.remove('show');
+        return;
+      }
+
+      element.textContent = value;
+      element.classList.add('show');
+    }
+
+    function formatMetres(valueMm) {
+      return `${(valueMm / 1000).toFixed(2)}m`;
+    }
+
+    function generate() {
+      const columns = readNumber(elements.panelColumns, 10);
+      const rows = readNumber(elements.panelRows, 10);
+      const panelWidth = readNumber(elements.panelWidth, 192);
+      const panelHeight = readNumber(elements.panelHeight, 108);
+      const panelWidthMm = readMeasurement(elements.panelWidthMm, 500);
+      const panelHeightMm = readMeasurement(elements.panelHeightMm, 500);
+      const numberStart = Number.parseInt(elements.numberStart.value, 10) || 1;
+      const outputWidth = columns * panelWidth;
+      const outputHeight = rows * panelHeight;
+      const wallWidthMm = columns * panelWidthMm;
+      const wallHeightMm = rows * panelHeightMm;
+      const mode = elements.patternMode.value;
+      const order = elements.numberOrder.value;
+      const orderLabel = elements.numberOrder.selectedOptions[0].textContent;
+      const client = elements.clientName.value.trim();
+      const device = elements.deviceName.value.trim();
+
+      elements.outputWidth.value = outputWidth;
+      elements.outputHeight.value = outputHeight;
+      elements.wallWidthMm.value = wallWidthMm;
+      elements.wallHeightMm.value = wallHeightMm;
+      elements.stage.style.aspectRatio = `${outputWidth} / ${outputHeight}`;
+      elements.grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+      elements.grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+      elements.grid.innerHTML = '';
+
+      for (let row = 0; row < rows; row++) {
+        for (let column = 0; column < columns; column++) {
+          const panel = document.createElement('div');
+          const panelNumber = getPanelNumber(row, column, rows, columns, numberStart, order);
+          const x = column * panelWidth;
+          const y = row * panelHeight;
+
+          panel.className = 'panel';
+          panel.style.background = getPanelColour(row, column, rows, columns, mode);
+          panel.innerHTML = `
+            <div class="panel-copy">
+              <div class="panel-index">${panelNumber}</div>
+              <div class="panel-detail">R${row + 1} C${column + 1}</div>
+              <div class="panel-detail">${panelWidth}x${panelHeight}px</div>
+              <div class="panel-detail">x${x} y${y}</div>
+            </div>
+          `;
+          elements.grid.appendChild(panel);
+        }
+      }
+
+      updateChip(elements.clientChip, client);
+      updateChip(elements.deviceChip, device);
+      elements.footerLeft.textContent = `${outputWidth}x${outputHeight} output | ${wallWidthMm}x${wallHeightMm}mm wall | ${formatMetres(wallWidthMm)} x ${formatMetres(wallHeightMm)}`;
+      elements.footerRight.textContent = `${columns}x${rows} panels | ${panelWidth}x${panelHeight}px per panel | ${orderLabel}`;
+      elements.warning.classList.remove('show');
+      elements.warning.textContent = '';
+    }
+
+    async function fullscreen() {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      if (elements.stage.requestFullscreen) {
+        await elements.stage.requestFullscreen();
+      }
+    }
+
+    elements.generateButton.addEventListener('click', generate);
+    elements.fullscreenButton.addEventListener('click', fullscreen);
+    elements.clientLogo.addEventListener('change', updateLogo);
+
+    for (const input of document.querySelectorAll('input, select')) {
+      input.addEventListener('input', () => generate());
+    }
+
+    generate();
+  </script>
+</body>
+</html>

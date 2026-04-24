@@ -1,0 +1,1219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Local Network Helper</title>
+  <style>
+    :root {
+      --bg: #060606;
+      --panel: #171717;
+      --panel-2: #222222;
+      --panel-3: #0d0d0d;
+      --text: #f7f1df;
+      --muted: #b8b09c;
+      --brand: #ffd84d;
+      --ok: #3fd079;
+      --warn: #ffbd4a;
+      --bad: #ff5c5c;
+      --blue: #8dc8ff;
+      --line: rgba(255, 255, 255, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 14% 10%, rgba(255, 216, 77, 0.16), transparent 25rem),
+        radial-gradient(circle at 88% 12%, rgba(63, 208, 121, 0.12), transparent 28rem),
+        linear-gradient(135deg, #030303, var(--bg) 58%, #101010);
+      font-family: Aptos, Segoe UI, Tahoma, sans-serif;
+    }
+
+    main {
+      width: min(1320px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 30px 0 46px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 6vw, 82px);
+      line-height: 0.92;
+      letter-spacing: -0.07em;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+
+    h3 {
+      margin: 0 0 6px;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .pill {
+      border: 1px solid rgba(255, 216, 77, 0.38);
+      border-radius: 999px;
+      color: var(--brand);
+      padding: 10px 14px;
+      background: rgba(255, 216, 77, 0.08);
+      white-space: nowrap;
+      font-weight: 900;
+    }
+
+    .note {
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(141, 200, 255, 0.3);
+      background: rgba(141, 200, 255, 0.08);
+      color: #d9edff;
+      line-height: 1.48;
+    }
+
+    .note.warn {
+      border-color: rgba(255, 189, 74, 0.36);
+      background: rgba(255, 189, 74, 0.08);
+      color: #ffe7b8;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 430px) minmax(0, 1fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .column {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)), var(--panel);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+    }
+
+    .card.disabled {
+      opacity: 0.55;
+      filter: grayscale(0.75);
+    }
+
+    .question-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    label,
+    legend {
+      display: block;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #efe2aa;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 13px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel-3);
+      color: var(--text);
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+
+    fieldset {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .toggle-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .toggle {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
+    }
+
+    .toggle input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--brand);
+    }
+
+    .toggle strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button,
+    a.button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 11px 14px;
+      border-radius: 13px;
+      border: 0;
+      color: #171300;
+      background: var(--brand);
+      font: inherit;
+      font-weight: 900;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    button.secondary,
+    a.button.secondary {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    button.ghost {
+      color: var(--blue);
+      background: rgba(141, 200, 255, 0.08);
+      border: 1px solid rgba(141, 200, 255, 0.28);
+    }
+
+    button.danger {
+      color: #ffe0e0;
+      background: rgba(255, 92, 92, 0.1);
+      border: 1px solid rgba(255, 92, 92, 0.28);
+    }
+
+    button:disabled,
+    a.button.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .badge.ok {
+      color: var(--ok);
+      background: rgba(63, 208, 121, 0.12);
+    }
+
+    .badge.warn {
+      color: var(--warn);
+      background: rgba(255, 189, 74, 0.12);
+    }
+
+    .badge.bad {
+      color: var(--bad);
+      background: rgba(255, 92, 92, 0.12);
+    }
+
+    .badge.info {
+      color: var(--blue);
+      background: rgba(141, 200, 255, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+
+    th,
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      vertical-align: top;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      color: #efe2aa;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .editable-table input,
+    .editable-table select {
+      min-width: 0;
+      padding: 10px 11px;
+      border-radius: 12px;
+    }
+
+    .editable-table td {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .monitor-row.up {
+      background: rgba(63, 208, 121, 0.06);
+    }
+
+    .monitor-row.down {
+      background: rgba(255, 92, 92, 0.06);
+    }
+
+    .monitor-row.unknown {
+      background: rgba(255, 189, 74, 0.06);
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-chip.up {
+      color: var(--ok);
+      background: rgba(63, 208, 121, 0.16);
+    }
+
+    .status-chip.down {
+      color: var(--bad);
+      background: rgba(255, 92, 92, 0.16);
+    }
+
+    .status-chip.unknown {
+      color: var(--warn);
+      background: rgba(255, 189, 74, 0.16);
+    }
+
+    .discovery-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .device-card {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
+    }
+
+    .device-card-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: start;
+    }
+
+    .device-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .meta span {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .results-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .result-item {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
+    }
+
+    .result-item .result-name {
+      color: #efe2aa;
+      font-weight: 900;
+    }
+
+    .activity-log {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .activity-log div {
+      padding: 10px 12px;
+      border-radius: 13px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .tiny {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    @media (max-width: 1000px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .result-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Local Network Helper</h1>
+        <p>Ask the setup questions once, discover likely devices on the subnet, then keep a red/green watch table running for the kit that matters.</p>
+      </div>
+      <div class="pill" id="modePill">Browser only</div>
+    </header>
+
+    <section class="note" id="helperNote">
+      Drafting the watch list works anywhere. Discovery, live monitoring, and local Windows setup need the USB helper, so open this page via <code>launchers\0-Dashboard.cmd</code> or <code>launchers\6-Local-Network-Helper.cmd</code>.
+    </section>
+
+    <div class="layout">
+      <div class="column">
+        <section class="card" id="questionsCard">
+          <h2>Initial Questions</h2>
+          <p>Tell the helper what network to scan, what this laptop should prepare locally, and how often the watch table should refresh.</p>
+
+          <div class="question-grid">
+            <div>
+              <label for="siteName">Show / room name</label>
+              <input id="siteName" placeholder="Town Hall Gala - main room">
+            </div>
+
+            <div>
+              <label for="cidrInput">Network range</label>
+              <input id="cidrInput" placeholder="10.0.0.0/24">
+              <div class="tiny">Leave blank to let the helper pick the first active adapter's suggested subnet.</div>
+            </div>
+
+            <div>
+              <label for="monitorInterval">Monitor interval</label>
+              <select id="monitorInterval">
+                <option value="5000">Every 5 seconds</option>
+                <option value="10000" selected>Every 10 seconds</option>
+                <option value="15000">Every 15 seconds</option>
+                <option value="30000">Every 30 seconds</option>
+              </select>
+            </div>
+          </div>
+
+          <fieldset style="margin-top: 16px;">
+            <legend>Prepare This Windows Laptop</legend>
+            <div class="toggle-list">
+              <label class="toggle">
+                <input type="checkbox" id="enableSsh">
+                <span>
+                  <strong>Enable local OpenSSH server</strong>
+                  Best for quick laptop-to-laptop terminal access later. This only prepares the current Windows laptop.
+                </span>
+              </label>
+
+              <label class="toggle">
+                <input type="checkbox" id="enableFileSharing">
+                <span>
+                  <strong>Enable local file sharing prerequisites</strong>
+                  Turns on Windows firewall/service prerequisites so a share can be used. It does not publish a folder automatically.
+                </span>
+              </label>
+
+              <label class="toggle">
+                <input type="checkbox" id="enableDiscovery" checked>
+                <span>
+                  <strong>Enable network discovery prerequisites</strong>
+                  Useful for finding peer devices, especially on quick event LANs.
+                </span>
+              </label>
+
+              <label class="toggle">
+                <input type="checkbox" id="preferPrivate">
+                <span>
+                  <strong>Prefer private network profile on this laptop</strong>
+                  Optional. Some discovery and sharing features behave better on a private profile.
+                </span>
+              </label>
+
+              <label class="toggle">
+                <input type="checkbox" id="dryRun" checked>
+                <span>
+                  <strong>Dry run first</strong>
+                  Recommended. Shows what would happen without changing Windows settings.
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="actions">
+            <button id="prepareButton">Prepare this laptop</button>
+            <button id="discoverButton" class="secondary">Discover devices</button>
+            <button id="startMonitorButton" class="ghost">Start monitoring</button>
+            <button id="stopMonitorButton" class="danger">Stop</button>
+          </div>
+
+          <div class="status-strip" id="summaryBadges"></div>
+        </section>
+
+        <section class="card" id="setupResultsCard">
+          <h2>Laptop Setup Results</h2>
+          <p>Green means the step applied or would apply cleanly. Amber means dry-run or needs admin. Red means the step failed and needs a human check.</p>
+          <div class="results-list" id="setupResults">
+            <div class="tiny">No setup run yet.</div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Activity</h2>
+          <p>Short status notes from discovery and monitor runs.</p>
+          <div class="activity-log" id="activityLog"></div>
+        </section>
+      </div>
+
+      <div class="column">
+        <section class="card">
+          <h2>Watch List</h2>
+          <p>Name the devices that must be present. Add them manually, or pull them in from the discovery list below.</p>
+          <div class="actions">
+            <button id="addWatchRowButton" class="secondary">Add manual row</button>
+            <button id="saveWatchListButton" class="secondary">Save watch list</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="editable-table">
+              <thead>
+                <tr>
+                  <th>Device name</th>
+                  <th>Role</th>
+                  <th>Target / IP / hostname</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="watchListBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Live Status</h2>
+          <p>Rows go green when the target responds, red when it drops, and amber when the helper does not yet have enough to call it either way.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Device</th>
+                  <th>Status</th>
+                  <th>Role</th>
+                  <th>Last seen</th>
+                  <th>Up total</th>
+                  <th>Down total</th>
+                  <th>Detail</th>
+                </tr>
+              </thead>
+              <tbody id="monitorBody">
+                <tr><td colspan="7" class="tiny">Monitoring has not started yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Discovery Results</h2>
+          <p>These are likely devices found on the scanned range. Add any useful ones straight into the watch list.</p>
+          <div class="actions">
+            <button id="clearDiscoveryButton" class="secondary">Clear discovered list</button>
+          </div>
+          <div class="discovery-list" id="discoveryList">
+            <div class="tiny">No discovery results yet.</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const helperConfig = window.MAV_LOCAL_HELPER || null;
+    const settingsKey = 'mav-network-helper-settings';
+    const watchKey = 'mav-network-helper-watchlist';
+    const monitorKey = 'mav-network-helper-monitor-state';
+    const discoveredKey = 'mav-network-helper-discovered';
+
+    const roleOptions = [
+      { id: 'windows-pc', label: 'Windows PC / PPT laptop' },
+      { id: 'ptz-camera', label: 'PTZ camera' },
+      { id: 'projector', label: 'Projector / display' },
+      { id: 'sound-desk', label: 'Sound desk' },
+      { id: 'nas', label: 'NAS / file share' },
+      { id: 'printer', label: 'Printer' },
+      { id: 'web-managed-av', label: 'AV / control endpoint' },
+      { id: 'generic', label: 'Other / unknown' }
+    ];
+
+    const rolePortHints = {
+      'windows-pc': [3389, 445, 80, 443],
+      'ptz-camera': [554, 80, 443, 22],
+      'projector': [4352, 80, 443],
+      'sound-desk': [10023, 80, 443, 22],
+      'nas': [445, 22, 80, 443],
+      'printer': [631, 9100, 80, 443],
+      'web-managed-av': [80, 443, 22],
+      'generic': [80, 443, 22]
+    };
+
+    const state = {
+      discovered: loadJson(discoveredKey, []),
+      monitorRecords: loadJson(monitorKey, {}),
+      timer: null,
+      running: false
+    };
+
+    const elements = {
+      modePill: document.getElementById('modePill'),
+      helperNote: document.getElementById('helperNote'),
+      siteName: document.getElementById('siteName'),
+      cidrInput: document.getElementById('cidrInput'),
+      monitorInterval: document.getElementById('monitorInterval'),
+      enableSsh: document.getElementById('enableSsh'),
+      enableFileSharing: document.getElementById('enableFileSharing'),
+      enableDiscovery: document.getElementById('enableDiscovery'),
+      preferPrivate: document.getElementById('preferPrivate'),
+      dryRun: document.getElementById('dryRun'),
+      prepareButton: document.getElementById('prepareButton'),
+      discoverButton: document.getElementById('discoverButton'),
+      startMonitorButton: document.getElementById('startMonitorButton'),
+      stopMonitorButton: document.getElementById('stopMonitorButton'),
+      summaryBadges: document.getElementById('summaryBadges'),
+      setupResults: document.getElementById('setupResults'),
+      activityLog: document.getElementById('activityLog'),
+      watchListBody: document.getElementById('watchListBody'),
+      monitorBody: document.getElementById('monitorBody'),
+      discoveryList: document.getElementById('discoveryList'),
+      addWatchRowButton: document.getElementById('addWatchRowButton'),
+      saveWatchListButton: document.getElementById('saveWatchListButton'),
+      clearDiscoveryButton: document.getElementById('clearDiscoveryButton'),
+      questionsCard: document.getElementById('questionsCard')
+    };
+
+    function loadJson(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function saveJson(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function newId() {
+      return `item-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function helperUrl(path, params = {}) {
+      const base = helperConfig && helperConfig.baseUrl ? helperConfig.baseUrl : '';
+      const url = new URL(path, base || window.location.href);
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== null && value !== undefined && value !== '') {
+          url.searchParams.set(key, value);
+        }
+      }
+      return url.toString();
+    }
+
+    async function postHelper(path, payload) {
+      if (!helperConfig || !helperConfig.token) {
+        throw new Error('Open this page through the USB helper to use discovery and monitoring.');
+      }
+
+      const response = await fetch(helperUrl(path, { token: helperConfig.token }), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: `payload=${encodeURIComponent(JSON.stringify(payload || {}))}`
+      });
+
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (error) {
+        throw new Error(text || 'The helper returned an unexpected response.');
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || `Helper request failed with ${response.status}.`);
+      }
+
+      return data;
+    }
+
+    function roleLabel(roleId) {
+      const found = roleOptions.find(option => option.id === roleId);
+      return found ? found.label : 'Other / unknown';
+    }
+
+    function collectSettings() {
+      return {
+        siteName: elements.siteName.value.trim(),
+        cidr: elements.cidrInput.value.trim(),
+        monitorIntervalMs: Number(elements.monitorInterval.value || 10000),
+        enableSshServer: elements.enableSsh.checked,
+        enableFileSharing: elements.enableFileSharing.checked,
+        enableNetworkDiscovery: elements.enableDiscovery.checked,
+        preferPrivateNetworkProfile: elements.preferPrivate.checked,
+        dryRun: elements.dryRun.checked
+      };
+    }
+
+    function saveSettings() {
+      saveJson(settingsKey, collectSettings());
+    }
+
+    function loadSettings() {
+      const settings = loadJson(settingsKey, {});
+      elements.siteName.value = settings.siteName || '';
+      elements.cidrInput.value = settings.cidr || '';
+      elements.monitorInterval.value = String(settings.monitorIntervalMs || 10000);
+      elements.enableSsh.checked = Boolean(settings.enableSshServer);
+      elements.enableFileSharing.checked = Boolean(settings.enableFileSharing);
+      elements.enableDiscovery.checked = settings.enableNetworkDiscovery !== false;
+      elements.preferPrivate.checked = Boolean(settings.preferPrivateNetworkProfile);
+      elements.dryRun.checked = settings.dryRun !== false;
+    }
+
+    function createRoleOptions(selected) {
+      return roleOptions.map(option => {
+        const isSelected = option.id === selected ? ' selected' : '';
+        return `<option value="${option.id}"${isSelected}>${option.label}</option>`;
+      }).join('');
+    }
+
+    function renderWatchList() {
+      const watchList = loadJson(watchKey, []);
+      if (!watchList.length) {
+        elements.watchListBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="tiny">No devices yet. Add a manual row or import from discovery.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      elements.watchListBody.innerHTML = watchList.map(item => `
+        <tr data-id="${item.id}">
+          <td><input data-field="name" value="${escapeHtml(item.name || '')}" placeholder="Main projector"></td>
+          <td>
+            <select data-field="roleId">
+              ${createRoleOptions(item.roleId || 'generic')}
+            </select>
+          </td>
+          <td><input data-field="target" value="${escapeHtml(item.target || '')}" placeholder="10.0.0.25"></td>
+          <td><input data-field="notes" value="${escapeHtml(item.notes || '')}" placeholder="Stage left"></td>
+          <td><button class="danger" data-remove="${item.id}">Remove</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function readWatchListFromTable() {
+      const rows = Array.from(elements.watchListBody.querySelectorAll('tr[data-id]'));
+      return rows.map(row => {
+        const id = row.dataset.id;
+        const fields = {};
+        row.querySelectorAll('[data-field]').forEach(input => {
+          fields[input.dataset.field] = input.value.trim();
+        });
+        return {
+          id,
+          name: fields.name || '',
+          roleId: fields.roleId || 'generic',
+          target: fields.target || '',
+          notes: fields.notes || '',
+          expectedPorts: rolePortHints[fields.roleId || 'generic'] || rolePortHints.generic
+        };
+      }).filter(item => item.name || item.target);
+    }
+
+    function saveWatchList(silent = false) {
+      const watchList = readWatchListFromTable();
+      saveJson(watchKey, watchList);
+      renderWatchList();
+      renderMonitorTable();
+      if (!silent) {
+        addLog(`Saved ${watchList.length} watch list row${watchList.length === 1 ? '' : 's'}.`);
+      }
+      return watchList;
+    }
+
+    function addManualWatchRow(data = {}) {
+      const watchList = loadJson(watchKey, []);
+      watchList.push({
+        id: data.id || newId(),
+        name: data.name || '',
+        roleId: data.roleId || 'generic',
+        target: data.target || '',
+        notes: data.notes || '',
+        expectedPorts: data.expectedPorts || rolePortHints[data.roleId || 'generic'] || rolePortHints.generic
+      });
+      saveJson(watchKey, watchList);
+      renderWatchList();
+    }
+
+    function addDiscoveredDevice(device) {
+      const watchList = loadJson(watchKey, []);
+      if (watchList.some(item => item.target === device.IpAddress)) {
+        addLog(`Skipped ${device.IpAddress} because it is already in the watch list.`);
+        return;
+      }
+
+      watchList.push({
+        id: newId(),
+        name: device.HostName || device.LikelyRole || device.IpAddress,
+        roleId: device.LikelyRoleId || 'generic',
+        target: device.IpAddress,
+        notes: device.Reasons ? device.Reasons.join(' | ') : '',
+        expectedPorts: rolePortHints[device.LikelyRoleId || 'generic'] || rolePortHints.generic
+      });
+      saveJson(watchKey, watchList);
+      renderWatchList();
+      addLog(`Added ${device.IpAddress} to the watch list.`);
+    }
+
+    function renderDiscovered() {
+      if (!state.discovered.length) {
+        elements.discoveryList.innerHTML = '<div class="tiny">No discovery results yet.</div>';
+        return;
+      }
+
+      elements.discoveryList.innerHTML = state.discovered.map((device, index) => {
+        const portText = (device.PortLabels || []).map(port => `${port.Port}/${port.Label}`).join(', ') || 'No common management ports answered.';
+        const reasonText = (device.Reasons || []).join(' ') || 'No strong fingerprint yet.';
+        return `
+          <div class="device-card">
+            <div class="device-card-top">
+              <div>
+                <strong>${escapeHtml(device.HostName || device.IpAddress)}</strong>
+                <p>${escapeHtml(device.LikelyRole || 'Reachable device')} • ${escapeHtml(device.IpAddress)}</p>
+              </div>
+              <button class="secondary" data-add-discovered="${index}">Add to watch list</button>
+            </div>
+            <div class="meta">
+              <span>${escapeHtml(device.Confidence || 'low')} confidence</span>
+              <span>${escapeHtml(device.MacAddress || 'No MAC seen')}</span>
+              <span>${device.RoundtripMs != null ? `${device.RoundtripMs} ms` : 'No ping time'}</span>
+            </div>
+            <p>${escapeHtml(portText)}</p>
+            <p>${escapeHtml(reasonText)}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function formatDuration(ms) {
+      const totalSeconds = Math.max(0, Math.floor((ms || 0) / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+      if (minutes > 0) return `${minutes}m ${seconds}s`;
+      return `${seconds}s`;
+    }
+
+    function formatTimestamp(isoText) {
+      if (!isoText) return 'Never';
+      const date = new Date(isoText);
+      if (Number.isNaN(date.valueOf())) return isoText;
+      return date.toLocaleString();
+    }
+
+    function updateMonitorRecords(results) {
+      const now = Date.now();
+      const resultMap = new Map(results.map(result => [result.Id, result]));
+      const watchList = loadJson(watchKey, []);
+
+      for (const item of watchList) {
+        const result = resultMap.get(item.id);
+        const record = state.monitorRecords[item.id] || {
+          currentState: 'unknown',
+          upMs: 0,
+          downMs: 0,
+          lastCheckedAt: now,
+          lastStateChangeAt: now,
+          lastSeenAt: null,
+          lastResult: null
+        };
+
+        const elapsed = Math.max(0, now - (record.lastCheckedAt || now));
+        if (record.currentState === 'up') {
+          record.upMs += elapsed;
+        } else if (record.currentState === 'down') {
+          record.downMs += elapsed;
+        }
+
+        const nextState = result ? result.Status : 'unknown';
+        if (nextState !== record.currentState) {
+          record.lastStateChangeAt = now;
+        }
+
+        if (result && result.Status === 'up') {
+          record.lastSeenAt = result.CheckedAt || new Date().toISOString();
+        }
+
+        record.currentState = nextState;
+        record.lastCheckedAt = now;
+        record.lastResult = result || null;
+        state.monitorRecords[item.id] = record;
+      }
+
+      saveJson(monitorKey, state.monitorRecords);
+    }
+
+    function renderMonitorTable() {
+      const watchList = loadJson(watchKey, []);
+      if (!watchList.length) {
+        elements.monitorBody.innerHTML = '<tr><td colspan="7" class="tiny">Add devices to the watch list to begin monitoring.</td></tr>';
+        return;
+      }
+
+      elements.monitorBody.innerHTML = watchList.map(item => {
+        const record = state.monitorRecords[item.id] || {};
+        const result = record.lastResult || {};
+        const stateName = record.currentState || 'unknown';
+        const notes = (result.Notes || []).join(' ') || item.notes || '';
+        return `
+          <tr class="monitor-row ${stateName}">
+            <td>
+              <strong>${escapeHtml(item.name || item.target || 'Unnamed')}</strong>
+              <div class="tiny">${escapeHtml(item.target || 'No target')}</div>
+            </td>
+            <td><span class="status-chip ${stateName}">${stateName}</span></td>
+            <td>${escapeHtml(roleLabel(item.roleId || 'generic'))}</td>
+            <td>${escapeHtml(record.lastSeenAt ? formatTimestamp(record.lastSeenAt) : 'Never')}</td>
+            <td>${escapeHtml(formatDuration(record.upMs || 0))}</td>
+            <td>${escapeHtml(formatDuration(record.downMs || 0))}</td>
+            <td>${escapeHtml(notes || 'Waiting for first poll.')}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderSummaryBadges(data) {
+      const badges = [];
+      if (data && data.Mode === 'Discover' && data.Scan) {
+        badges.push({ text: `${data.Scan.AliveHosts} reachable`, className: data.Scan.AliveHosts > 0 ? 'ok' : 'warn' });
+        badges.push({ text: `${data.Scan.ScannedHosts} scanned`, className: 'info' });
+        badges.push({ text: data.Scan.EffectiveCidr || 'No CIDR', className: 'info' });
+      }
+      if (data && data.Mode === 'Setup' && data.Summary) {
+        badges.push({ text: `${data.Summary.SuccessCount} applied`, className: data.Summary.SuccessCount > 0 ? 'ok' : 'info' });
+        badges.push({ text: `${data.Summary.DryRunCount} dry-run`, className: data.Summary.DryRunCount > 0 ? 'warn' : 'info' });
+        badges.push({ text: `${data.Summary.NeedsAdminCount} needs admin`, className: data.Summary.NeedsAdminCount > 0 ? 'warn' : 'info' });
+        badges.push({ text: `${data.Summary.ErrorCount} errors`, className: data.Summary.ErrorCount > 0 ? 'bad' : 'info' });
+      }
+      if (!badges.length) {
+        badges.push({ text: helperConfig ? 'Helper ready' : 'Watch list only', className: helperConfig ? 'ok' : 'warn' });
+      }
+
+      elements.summaryBadges.innerHTML = badges.map(badge => `<span class="badge ${badge.className}">${escapeHtml(badge.text)}</span>`).join('');
+    }
+
+    function renderSetupResults(data) {
+      if (!data || !data.Results || !data.Results.length) {
+        elements.setupResults.innerHTML = '<div class="tiny">No setup run yet.</div>';
+        return;
+      }
+
+      elements.setupResults.innerHTML = data.Results.map(result => `
+        <div class="result-item">
+          <div class="result-name">${escapeHtml(result.Name)}</div>
+          <div>
+            <span class="badge ${result.State === 'success' ? 'ok' : result.State === 'error' ? 'bad' : 'warn'}">${escapeHtml(result.State)}</span>
+            <p style="margin-top: 8px;">${escapeHtml(result.Detail || '')}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addLog(message) {
+      const stamp = new Date().toLocaleTimeString();
+      const entries = Array.from(elements.activityLog.querySelectorAll('div'));
+      const item = document.createElement('div');
+      item.textContent = `${stamp}  ${message}`;
+      elements.activityLog.prepend(item);
+      while (elements.activityLog.children.length > 18) {
+        elements.activityLog.removeChild(elements.activityLog.lastChild);
+      }
+    }
+
+    function setHelperMode() {
+      if (!helperConfig || !helperConfig.token) {
+        elements.modePill.textContent = 'Browser only';
+        elements.helperNote.className = 'note warn';
+        elements.questionsCard.classList.add('disabled');
+        elements.prepareButton.disabled = true;
+        elements.discoverButton.disabled = true;
+        elements.startMonitorButton.disabled = true;
+        elements.stopMonitorButton.disabled = true;
+        renderSummaryBadges(null);
+        return;
+      }
+
+      elements.modePill.textContent = 'USB helper connected';
+      elements.helperNote.className = 'note';
+      elements.helperNote.textContent = 'Local helper detected. This page can now run subnet discovery, watch polling, and optional Windows laptop setup steps with one-time local token protection.';
+      renderSummaryBadges(null);
+    }
+
+    async function runSetup() {
+      saveSettings();
+      try {
+        const data = await postHelper('/api/network-helper/setup', collectSettings());
+        renderSummaryBadges(data);
+        renderSetupResults(data);
+        addLog(`Laptop setup returned ${data.Summary ? data.Summary.ErrorCount : 0} error step(s).`);
+      } catch (error) {
+        renderSetupResults({
+          Results: [
+            { Name: 'Setup request', State: 'error', Detail: error.message }
+          ]
+        });
+        addLog(error.message);
+      }
+    }
+
+    async function runDiscovery() {
+      saveSettings();
+      try {
+        const data = await postHelper('/api/network-helper/discover', { cidr: elements.cidrInput.value.trim() });
+        if (!elements.cidrInput.value.trim() && data.Scan && data.Scan.EffectiveCidr) {
+          elements.cidrInput.value = data.Scan.EffectiveCidr;
+          saveSettings();
+        }
+        state.discovered = data.Devices || [];
+        saveJson(discoveredKey, state.discovered);
+        renderSummaryBadges(data);
+        renderDiscovered();
+        const notes = data.Scan && data.Scan.Notes ? data.Scan.Notes.join(' ') : 'Discovery finished.';
+        addLog(notes);
+      } catch (error) {
+        addLog(error.message);
+      }
+    }
+
+    async function tickMonitor() {
+      const watchList = saveWatchList(true);
+      if (!watchList.length) {
+        addLog('Monitoring skipped because the watch list is empty.');
+        renderMonitorTable();
+        return;
+      }
+
+      try {
+        const data = await postHelper('/api/network-helper/probe', { targets: watchList });
+        updateMonitorRecords(data.Results || []);
+        renderMonitorTable();
+        addLog(`Monitor pass: ${data.Summary ? data.Summary.UpCount : 0} up, ${data.Summary ? data.Summary.DownCount : 0} down.`);
+      } catch (error) {
+        addLog(error.message);
+      }
+    }
+
+    function startMonitoring() {
+      if (state.timer) {
+        window.clearInterval(state.timer);
+      }
+
+      state.running = true;
+      const interval = Number(elements.monitorInterval.value || 10000);
+      tickMonitor();
+      state.timer = window.setInterval(tickMonitor, interval);
+      addLog(`Started monitoring every ${Math.round(interval / 1000)} second(s).`);
+    }
+
+    function stopMonitoring() {
+      state.running = false;
+      if (state.timer) {
+        window.clearInterval(state.timer);
+        state.timer = null;
+      }
+      addLog('Stopped monitoring.');
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function bindEvents() {
+      elements.prepareButton.addEventListener('click', runSetup);
+      elements.discoverButton.addEventListener('click', runDiscovery);
+      elements.startMonitorButton.addEventListener('click', startMonitoring);
+      elements.stopMonitorButton.addEventListener('click', stopMonitoring);
+      elements.addWatchRowButton.addEventListener('click', () => addManualWatchRow());
+      elements.saveWatchListButton.addEventListener('click', saveWatchList);
+      elements.clearDiscoveryButton.addEventListener('click', () => {
+        state.discovered = [];
+        saveJson(discoveredKey, state.discovered);
+        renderDiscovered();
+        addLog('Cleared the discovered device list.');
+      });
+
+      for (const input of [elements.siteName, elements.cidrInput, elements.monitorInterval, elements.enableSsh, elements.enableFileSharing, elements.enableDiscovery, elements.preferPrivate, elements.dryRun]) {
+        input.addEventListener('change', saveSettings);
+      }
+
+      elements.watchListBody.addEventListener('click', event => {
+        const removeId = event.target.getAttribute('data-remove');
+        if (!removeId) return;
+
+        const watchList = loadJson(watchKey, []).filter(item => item.id !== removeId);
+        delete state.monitorRecords[removeId];
+        saveJson(watchKey, watchList);
+        saveJson(monitorKey, state.monitorRecords);
+        renderWatchList();
+        renderMonitorTable();
+      });
+
+      elements.discoveryList.addEventListener('click', event => {
+        const index = event.target.getAttribute('data-add-discovered');
+        if (index === null) return;
+        const device = state.discovered[Number(index)];
+        if (device) addDiscoveredDevice(device);
+      });
+    }
+
+    function init() {
+      loadSettings();
+      renderWatchList();
+      renderDiscovered();
+      renderMonitorTable();
+      setHelperMode();
+      bindEvents();
+      addLog(helperConfig ? 'Helper ready for local network scans.' : 'Helper not detected. Watch list editing only.');
+    }
+
+    init();
+  </script>
+</body>
+</html>

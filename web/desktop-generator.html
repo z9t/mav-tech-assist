@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Tech Assist Desktop Generator</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: #151515;
+      --panel-2: #202020;
+      --text: #f7f1df;
+      --muted: #b7af9a;
+      --brand: #ffd84d;
+      --line: rgba(255, 255, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255, 216, 77, 0.16), transparent 24rem),
+        radial-gradient(circle at 92% 20%, rgba(63, 208, 121, 0.12), transparent 26rem),
+        #050505;
+      font-family: Aptos, Segoe UI, Tahoma, sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      padding: 22px;
+      background: rgba(10, 10, 10, 0.92);
+      border-right: 1px solid var(--line);
+      overflow: auto;
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px;
+      display: grid;
+      place-items: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: var(--text);
+      background: var(--panel);
+      font: inherit;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 14px;
+      color: #171300;
+      background: var(--brand);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    .hint {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255, 216, 77, 0.08);
+      border: 1px solid rgba(255, 216, 77, 0.25);
+      color: #fff0a8;
+      font-size: 13px;
+    }
+
+    .stage-shell {
+      width: min(100%, 1500px);
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 2px solid #ffffff;
+      background: #000;
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.48);
+    }
+
+    .stage.fullscreen {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      border: 0;
+    }
+
+    .backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .backdrop.blackout {
+      background:
+        radial-gradient(circle at 50% 45%, rgba(255, 216, 77, 0.14), transparent 24%),
+        radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.07), transparent 22%),
+        linear-gradient(135deg, #030303, #0f0f0f 55%, #191205);
+    }
+
+    .backdrop.warm {
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 216, 77, 0.18), transparent 26%),
+        radial-gradient(circle at 80% 72%, rgba(255, 107, 60, 0.18), transparent 28%),
+        linear-gradient(135deg, #140d03, #050505 58%, #231204);
+    }
+
+    .backdrop.blueprint {
+      background:
+        radial-gradient(circle at 22% 18%, rgba(90, 180, 255, 0.14), transparent 24%),
+        radial-gradient(circle at 82% 68%, rgba(0, 255, 190, 0.12), transparent 28%),
+        linear-gradient(135deg, #021017, #061621 58%, #010507);
+    }
+
+    .backdrop.grid {
+      background:
+        linear-gradient(135deg, #020202, #0d0d0d 62%, #151208),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 5.8%),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 8.5%);
+      background-blend-mode: normal, screen, screen;
+    }
+
+    .hero {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      padding: clamp(30px, 5vw, 84px);
+    }
+
+    .hero-frame {
+      width: min(78%, 1120px);
+      display: grid;
+      justify-items: center;
+      gap: clamp(12px, 2vw, 22px);
+      padding: clamp(20px, 3.2vw, 42px);
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(5, 5, 5, 0.34);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+      text-align: center;
+    }
+
+    .hero .mav-logo {
+      max-width: min(54vw, 420px);
+      max-height: 120px;
+      object-fit: contain;
+    }
+
+    .hero-client-logo {
+      display: none;
+      max-width: min(34vw, 260px);
+      max-height: 92px;
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.08);
+      object-fit: contain;
+    }
+
+    .device-display {
+      font-size: clamp(28px, 4.6vw, 88px);
+      line-height: 0.92;
+      font-weight: 950;
+      letter-spacing: -0.05em;
+      text-wrap: balance;
+    }
+
+    .client-display {
+      color: #fff3bf;
+      font-size: clamp(16px, 1.6vw, 28px);
+      line-height: 1.15;
+      font-weight: 700;
+      text-wrap: balance;
+    }
+
+    .meta {
+      position: absolute;
+      z-index: 4;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 22px;
+      pointer-events: none;
+    }
+
+    .info-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .info-chip {
+      display: none;
+      max-width: min(60vw, 960px);
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: clamp(14px, 1.3vw, 24px);
+      line-height: 1.2;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+    }
+
+    .info-chip.show {
+      display: block;
+    }
+
+    .logos {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 18px;
+      min-height: 70px;
+    }
+
+    .meta .mav-logo {
+      max-width: 210px;
+      max-height: 80px;
+      object-fit: contain;
+    }
+
+    .meta .client-logo {
+      display: none;
+      max-width: 210px;
+      max-height: 80px;
+      object-fit: contain;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .footer {
+      position: absolute;
+      z-index: 4;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 22px;
+      color: #fff;
+      font-size: clamp(12px, 1vw, 20px);
+      text-shadow: 0 1px 7px rgba(0, 0, 0, 0.95);
+      pointer-events: none;
+    }
+
+    .footer > span {
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (display-mode: fullscreen) {
+      aside {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <h1>Desktop Generator</h1>
+      <p>Generate a clean branded output screen for the right laptop, aux output, presenter notes feed, or sponsor loop machine.</p>
+
+      <label for="clientName">Client name</label>
+      <input id="clientName" placeholder="Client / event name">
+
+      <label for="deviceName">Device / location label</label>
+      <input id="deviceName" placeholder="Main PPT laptop 1">
+
+      <div class="row">
+        <div>
+          <label for="resolutionPreset">Resolution preset</label>
+          <select id="resolutionPreset">
+            <option value="1920x1080">1920x1080</option>
+            <option value="3840x2160">3840x2160</option>
+            <option value="2560x1440">2560x1440</option>
+            <option value="3440x1440">3440x1440</option>
+            <option value="1280x720">1280x720</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div>
+          <label for="backgroundStyle">Background style</label>
+          <select id="backgroundStyle">
+            <option value="blackout">Blackout</option>
+            <option value="warm">Warm stage wash</option>
+            <option value="blueprint">Blueprint</option>
+            <option value="grid">Subtle grid</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="outputWidth">Output width px</label>
+          <input id="outputWidth" type="number" min="1" value="1920">
+        </div>
+        <div>
+          <label for="outputHeight">Output height px</label>
+          <input id="outputHeight" type="number" min="1" value="1080">
+        </div>
+      </div>
+
+      <label for="clientLogo">Client logo</label>
+      <input id="clientLogo" type="file" accept="image/*">
+
+      <div class="button-row">
+        <button id="generateButton">Generate</button>
+        <button id="fullscreenButton" class="secondary">Fullscreen</button>
+      </div>
+
+      <div class="hint">Tip: use this when you want a clean branded source-identification screen rather than a measurement pattern. It is useful for pres notes, sponsor loops, comfort monitors, and confidence screens.</div>
+    </aside>
+
+    <main>
+      <div class="stage-shell">
+        <section id="stage" class="stage" aria-label="Desktop generator">
+          <div id="backdrop" class="backdrop blackout"></div>
+          <div class="hero">
+            <div class="hero-frame">
+              <img class="mav-logo" alt="MAV logo" src="https://mav.com.au/wp-content/uploads/2022/09/logo-yw-1.png">
+              <img id="heroClientLogo" class="hero-client-logo" alt="Client logo">
+              <div id="deviceDisplay" class="device-display">Main PPT Laptop 1</div>
+              <div id="clientDisplay" class="client-display">MAV output ID screen</div>
+            </div>
+          </div>
+          <div class="meta">
+            <div class="info-stack">
+              <div id="clientChip" class="info-chip"></div>
+              <div id="deviceChip" class="info-chip"></div>
+            </div>
+            <div class="logos">
+              <img class="mav-logo" alt="MAV logo" src="https://mav.com.au/wp-content/uploads/2022/09/logo-yw-1.png">
+              <img id="clientLogoPreview" class="client-logo" alt="Client logo">
+            </div>
+          </div>
+          <div class="footer">
+            <span id="footerLeft">1920x1080 output</span>
+            <span id="footerRight">Blackout background</span>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const presets = {
+      '1920x1080': { width: 1920, height: 1080 },
+      '3840x2160': { width: 3840, height: 2160 },
+      '2560x1440': { width: 2560, height: 1440 },
+      '3440x1440': { width: 3440, height: 1440 },
+      '1280x720': { width: 1280, height: 720 }
+    };
+
+    const backgroundLabels = {
+      blackout: 'Blackout background',
+      warm: 'Warm stage wash',
+      blueprint: 'Blueprint background',
+      grid: 'Subtle grid'
+    };
+
+    const elements = {
+      clientName: document.getElementById('clientName'),
+      deviceName: document.getElementById('deviceName'),
+      resolutionPreset: document.getElementById('resolutionPreset'),
+      backgroundStyle: document.getElementById('backgroundStyle'),
+      outputWidth: document.getElementById('outputWidth'),
+      outputHeight: document.getElementById('outputHeight'),
+      clientLogo: document.getElementById('clientLogo'),
+      clientLogoPreview: document.getElementById('clientLogoPreview'),
+      heroClientLogo: document.getElementById('heroClientLogo'),
+      deviceDisplay: document.getElementById('deviceDisplay'),
+      clientDisplay: document.getElementById('clientDisplay'),
+      clientChip: document.getElementById('clientChip'),
+      deviceChip: document.getElementById('deviceChip'),
+      footerLeft: document.getElementById('footerLeft'),
+      footerRight: document.getElementById('footerRight'),
+      backdrop: document.getElementById('backdrop'),
+      stage: document.getElementById('stage'),
+      generateButton: document.getElementById('generateButton'),
+      fullscreenButton: document.getElementById('fullscreenButton')
+    };
+
+    function readNumber(input, fallback) {
+      const value = Number.parseInt(input.value, 10);
+      return Number.isFinite(value) && value > 0 ? value : fallback;
+    }
+
+    function applyPreset() {
+      const preset = presets[elements.resolutionPreset.value];
+      if (!preset) return;
+      elements.outputWidth.value = preset.width;
+      elements.outputHeight.value = preset.height;
+    }
+
+    function syncPreset() {
+      const width = readNumber(elements.outputWidth, 1920);
+      const height = readNumber(elements.outputHeight, 1080);
+
+      for (const [key, preset] of Object.entries(presets)) {
+        if (preset.width === width && preset.height === height) {
+          elements.resolutionPreset.value = key;
+          return;
+        }
+      }
+
+      elements.resolutionPreset.value = 'custom';
+    }
+
+    function updateChip(element, value) {
+      if (!value) {
+        element.textContent = '';
+        element.classList.remove('show');
+        return;
+      }
+
+      element.textContent = value;
+      element.classList.add('show');
+    }
+
+    function updateLogo(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        elements.clientLogoPreview.style.display = 'none';
+        elements.clientLogoPreview.removeAttribute('src');
+        elements.heroClientLogo.style.display = 'none';
+        elements.heroClientLogo.removeAttribute('src');
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      elements.clientLogoPreview.src = objectUrl;
+      elements.clientLogoPreview.style.display = 'block';
+      elements.heroClientLogo.src = objectUrl;
+      elements.heroClientLogo.style.display = 'block';
+    }
+
+    function generate() {
+      const width = readNumber(elements.outputWidth, 1920);
+      const height = readNumber(elements.outputHeight, 1080);
+      const client = elements.clientName.value.trim();
+      const device = elements.deviceName.value.trim();
+      const backgroundStyle = elements.backgroundStyle.value;
+
+      elements.stage.style.aspectRatio = `${width} / ${height}`;
+      elements.backdrop.className = `backdrop ${backgroundStyle}`;
+      elements.deviceDisplay.textContent = device || 'Display Output';
+      elements.clientDisplay.textContent = client || 'MAV output ID screen';
+      elements.footerLeft.textContent = `${width}x${height} output`;
+      elements.footerRight.textContent = backgroundLabels[backgroundStyle] || 'Desktop background';
+
+      updateChip(elements.clientChip, client);
+      updateChip(elements.deviceChip, device);
+      syncPreset();
+    }
+
+    async function fullscreen() {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      if (elements.stage.requestFullscreen) {
+        await elements.stage.requestFullscreen();
+      }
+    }
+
+    elements.resolutionPreset.addEventListener('change', () => {
+      applyPreset();
+      generate();
+    });
+
+    elements.generateButton.addEventListener('click', generate);
+    elements.fullscreenButton.addEventListener('click', fullscreen);
+    elements.clientLogo.addEventListener('change', updateLogo);
+
+    for (const input of document.querySelectorAll('input, select')) {
+      if (input === elements.clientLogo) continue;
+      input.addEventListener('input', () => generate());
+    }
+
+    applyPreset();
+    generate();
+  </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Tech Assist Daily Use Guide</title>
+  <link rel="stylesheet" href="handbook.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="top-row">
+        <span class="pill">Daily Use Guide</span>
+        <div class="button-row">
+          <a id="portalLink" class="button" href="/">Back to MAV Tech Assist</a>
+          <a class="button secondary" href="DAILY_USE_GUIDE.md">Open markdown source</a>
+        </div>
+      </div>
+      <div>
+        <h1>Daily Use Guide</h1>
+        <p class="lead">This is the plain-English run sheet for day-to-day operators. Use the smallest tool that answers the question, and switch paths quickly instead of pushing through a broken one.</p>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Pick The Right Starting Point</h2>
+        <h3>Use <code>Run Online</code> when:</h3>
+        <ul>
+          <li>internet is working</li>
+          <li>you only need browser-safe tools</li>
+          <li>you want the easiest path on a phone, tablet, or laptop</li>
+        </ul>
+
+        <h3>Use <code>Or from USB</code> when:</h3>
+        <ul>
+          <li>there is no internet</li>
+          <li>you need the offline browser pages</li>
+          <li>you want a backup copy of the toolkit on a stick</li>
+        </ul>
+
+        <h3>Use <code>launchers\\0-Dashboard.cmd</code> when:</h3>
+        <ul>
+          <li>you need Windows-only checks</li>
+          <li>you want declientify, cleanup, network, or baseline tasks</li>
+          <li>you want progress bars and pass/fail feedback instead of raw PowerShell</li>
+        </ul>
+      </article>
+
+      <article class="card success">
+        <h2>Normal Daily Flow</h2>
+        <ol>
+          <li>Try the hosted site first at <code>https://showtime.mav.z9t.me</code>.</li>
+          <li>If internet is poor or missing, open <code>launchers\\0-Offline-Browser-Portal.cmd</code>.</li>
+          <li>If you need laptop cleanup or deeper Windows checks, open <code>launchers\\0-Dashboard.cmd</code>.</li>
+          <li>If you only need a display tool, open the matching generator directly.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>What Each Browser Tool Is For</h2>
+
+        <h3>Desktop generator</h3>
+        <p>Use this for a clean branded source-identification screen, like presenter notes, sponsor loop laptops, confidence screens, or comfort monitors.</p>
+
+        <h3>Test pattern generator</h3>
+        <p>Use this for general screen alignment, focus, overscan, safe margins, and colour checks.</p>
+
+        <h3>Event timer</h3>
+        <p>Use this for doors, session starts, rehearsals, cue points, and stage timing. <code>Reset</code> stops the timer, and <code>Clear saved settings</code> removes the last show name and timer details.</p>
+
+        <h3>LED wall test</h3>
+        <p>Use this for wall mapping, checking panel order, confirming cabinet pixel size, and confirming total wall size.</p>
+
+        <h3>Local network helper</h3>
+        <p>Use this for scanning a local AV network and keeping a red/green watch table running. Start with <code>Dry run first</code> before changing anything on the Windows laptop.</p>
+      </article>
+
+      <article class="card callout">
+        <h2>What Success Looks Like</h2>
+        <h3>Hosted site</h3>
+        <ul>
+          <li>the page opens quickly</li>
+          <li>the top badge says <code>Hosted site</code></li>
+          <li>browser tools open without blank pages or console errors</li>
+        </ul>
+
+        <h3>USB offline portal</h3>
+        <ul>
+          <li>the page opens even with no internet</li>
+          <li>the top badge says <code>USB offline site</code></li>
+          <li>browser tools still open from the USB</li>
+        </ul>
+
+        <h3>Dashboard</h3>
+        <ul>
+          <li>the top badge says <code>USB helper connected</code> or the page opens on <code>127.0.0.1</code></li>
+          <li>buttons show progress and a final success or fail state</li>
+          <li>reports are written into the toolkit <code>reports\\</code> folder</li>
+        </ul>
+      </article>
+
+      <article class="card warning">
+        <h2>Before You Hand A Laptop Over</h2>
+        <ol>
+          <li>Run the right browser tool or Windows script for the task.</li>
+          <li>Check that the result actually looks correct on screen.</li>
+          <li>If you used a Windows script, open the report if the dashboard shows a warning or fail.</li>
+          <li>If something looks wrong, stop and use the troubleshooting guide instead of guessing.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>If You Are Unsure</h2>
+        <ul>
+          <li>do not keep clicking random tools</li>
+          <li>use the smallest tool that answers the question</li>
+          <li>if a page or script looks wrong, take a screenshot and note which launcher or page you used</li>
+          <li>escalate if the same action fails twice</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+  <script>
+    const portalLink = document.getElementById('portalLink');
+    portalLink.href = location.protocol === 'file:' ? '../web/index.html' : '/';
+  </script>
+</body>
+</html>

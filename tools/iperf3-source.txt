@@ -1,0 +1,11 @@
+Bundled Windows iperf3 source note
+
+Fetched: 2026-04-24
+Source: https://files.budman.pw/iperf3.21_64.zip
+Upstream note: ESnet does not publish official Windows iperf3 binaries. This toolkit bundles the community Windows build from files.budman.pw.
+
+Included files and SHA-256:
+2c3986390749e67e15944f2a189426bf0b619938a442dc134e95487cbd7a31e1  iperf3.exe
+af155ee37a159ea28c6233c8f9d36ee2587169d31e023dc1e6fd216fc9ad5e47  cygcrypto-3.dll
+0ab76b4724499df54b75b7fa701788f1e77425ce65c8bca0a9f2120598bb8a70  cygwin1.dll
+5f10051462800d441c6aa3637db9e51549c4da288b288ff78b05a68a6dc19d7f  cygz.dll

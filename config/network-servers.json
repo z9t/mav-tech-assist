@@ -1,0 +1,23 @@
+{
+  "iperf3": {
+    "seconds": 10,
+    "parallelStreams": 4,
+    "maxConcurrentServers": 2,
+    "servers": [
+      {
+        "name": "MAV Showtime test server",
+        "host": "showtime.mav.z9t.me",
+        "port": 5201
+      }
+    ]
+  },
+  "ookla": {
+    "serverIds": []
+  },
+  "diagnostics": {
+    "host": "showtime.mav.z9t.me",
+    "httpsPort": 443,
+    "httpsRequired": false,
+    "iperfPort": 5201
+  }
+}

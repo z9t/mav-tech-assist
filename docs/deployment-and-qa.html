@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Tech Assist Deployment And QA Guide</title>
+  <link rel="stylesheet" href="handbook.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="top-row">
+        <span class="pill">Deployment And QA Guide</span>
+        <div class="button-row">
+          <a id="portalLink" class="button" href="/">Back to MAV Tech Assist</a>
+          <a class="button secondary" href="DEPLOYMENT_AND_QA_GUIDE.md">Open markdown source</a>
+        </div>
+      </div>
+      <div>
+        <h1>Deployment And QA Guide</h1>
+        <p class="lead">This is the release checklist for keeping the hosted site, the USB bundle, and the Windows dashboard path aligned. If these steps pass, operators should not need a developer for daily use.</p>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card success">
+        <h2>What Counts As A Good Release</h2>
+        <ul>
+          <li>the hosted site opens</li>
+          <li>the USB zip downloads</li>
+          <li>the offline USB pages open</li>
+          <li>the dashboard helper still starts</li>
+          <li>the main browser tools load without console errors</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Release Order</h2>
+        <ol>
+          <li>Update the local project files.</li>
+          <li>Rebuild the USB zip.</li>
+          <li>Run the smoke checks.</li>
+          <li>Copy the updated <code>web\\</code> files, <code>docs\\</code> files, and USB zip to the hosted site.</li>
+          <li>Re-check the live site in a browser.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Build The USB Zip</h2>
+        <p>Run this from the project root:</p>
+        <p><code>powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\Build-UsbBundle.ps1</code></p>
+        <p>Expected result: <code>MAV-Tech-Assist-USB.zip</code> is created at the project root.</p>
+      </article>
+
+      <article class="card callout">
+        <h2>Recommended Smoke Check</h2>
+        <p>Run this from the project root:</p>
+        <p><code>powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\Test-Toolkit.ps1 -StartDashboard -CheckBundle -CheckHostedSite</code></p>
+        <h3>What it should prove</h3>
+        <ul>
+          <li>PowerShell files parse cleanly</li>
+          <li>JSON config files are valid</li>
+          <li>key static pages exist</li>
+          <li>handover doc source files exist</li>
+          <li>the dashboard helper starts and serves the expected pages</li>
+          <li>the local helper APIs answer</li>
+          <li>the USB zip contains the required launchers, scripts, docs, config, and pages</li>
+          <li>the hosted site answers on the key URLs</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Manual Browser QA</h2>
+        <ul>
+          <li>check <code>/</code>, <code>/desktop-generator.html</code>, <code>/test-pattern-generator.html</code>, <code>/event-timer.html</code>, <code>/led-wall-test-generator.html</code>, <code>/network-helper.html</code>, and <code>/MAV-Tech-Assist-USB.zip</code></li>
+          <li>confirm the home page heading says <code>MAV Tech Assist</code></li>
+          <li>confirm hosted mode shows <code>Run Online (here)</code></li>
+          <li>confirm the USB card still shows the zip download</li>
+          <li>confirm the event timer starts and can be cleared</li>
+          <li>confirm there are no obvious layout breaks or console errors on load</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>Manual USB QA</h2>
+        <ol>
+          <li>open <code>launchers\\0-Offline-Browser-Portal.cmd</code></li>
+          <li>confirm the badge says <code>USB offline site</code></li>
+          <li>open <code>Desktop generator</code></li>
+          <li>open <code>Test pattern generator</code></li>
+          <li>open <code>Event timer</code></li>
+          <li>open <code>LED wall test</code></li>
+        </ol>
+        <p>Expected result: each page opens from the USB with no internet, the USB card says <code>Or from USB (here)</code>, and <code>Clear saved settings</code> works in the event timer.</p>
+      </article>
+
+      <article class="card">
+        <h2>Hosted Deployment Notes</h2>
+        <p>The hosted site currently serves static files from <code>/srv/showtime</code> on the VPS.</p>
+        <h3>At minimum, update:</h3>
+        <ul>
+          <li><code>index.html</code></li>
+          <li>all required <code>web\\*.html</code> pages</li>
+          <li>the <code>docs\\</code> files that the site links to</li>
+          <li><code>MAV-Tech-Assist-USB.zip</code></li>
+        </ul>
+      </article>
+
+      <article class="card warning">
+        <h2>Known Operational Limits</h2>
+        <ul>
+          <li>Windows-only tasks still need the local helper or direct launchers</li>
+          <li>the local network helper uses best-effort device fingerprints</li>
+          <li>throughput testing depends on the bundled <code>tools\\iperf3.exe</code> files and a healthy remote server</li>
+          <li>browser tools can verify a lot, but they do not replace Windows-side audits</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+  <script>
+    const portalLink = document.getElementById('portalLink');
+    portalLink.href = location.protocol === 'file:' ? '../web/index.html' : '/';
+  </script>
+</body>
+</html>

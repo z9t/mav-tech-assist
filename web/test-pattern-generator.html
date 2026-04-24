@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Tech Assist Test Pattern Generator</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: #151515;
+      --panel-2: #202020;
+      --text: #f7f1df;
+      --muted: #b7af9a;
+      --brand: #ffd84d;
+      --line: rgba(255, 255, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255, 216, 77, 0.16), transparent 24rem),
+        radial-gradient(circle at 92% 20%, rgba(63, 208, 121, 0.12), transparent 26rem),
+        #050505;
+      font-family: Aptos, Segoe UI, Tahoma, sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      padding: 22px;
+      background: rgba(10, 10, 10, 0.92);
+      border-right: 1px solid var(--line);
+      overflow: auto;
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px;
+      display: grid;
+      place-items: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: var(--text);
+      background: var(--panel);
+      font: inherit;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 14px;
+      color: #171300;
+      background: var(--brand);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    .hint {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255, 216, 77, 0.08);
+      border: 1px solid rgba(255, 216, 77, 0.25);
+      color: #fff0a8;
+      font-size: 13px;
+    }
+
+    .stage-shell {
+      width: min(100%, 1500px);
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 2px solid #ffffff;
+      background: #000;
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.48);
+    }
+
+    .stage.fullscreen {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      border: 0;
+    }
+
+    .pattern-surface {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .pattern-surface.grid {
+      background:
+        linear-gradient(90deg, transparent calc(50% - 1px), rgba(255, 255, 255, 0.95) calc(50% - 1px), rgba(255, 255, 255, 0.95) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(0deg, transparent calc(50% - 1px), rgba(255, 255, 255, 0.95) calc(50% - 1px), rgba(255, 255, 255, 0.95) calc(50% + 1px), transparent calc(50% + 1px)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px calc(100% / 16)),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px calc(100% / 9)),
+        #000;
+    }
+
+    .pattern-surface.focus {
+      background:
+        radial-gradient(circle at 50% 50%, transparent 0 8%, rgba(255, 255, 255, 0.95) 8% 8.8%, transparent 8.8% 15%, rgba(255, 255, 255, 0.92) 15% 15.8%, transparent 15.8% 23%, rgba(255, 255, 255, 0.88) 23% 23.8%, transparent 23.8% 100%),
+        linear-gradient(90deg, transparent calc(50% - 1px), #fff calc(50% - 1px), #fff calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(0deg, transparent calc(50% - 1px), #fff calc(50% - 1px), #fff calc(50% + 1px), transparent calc(50% + 1px)),
+        repeating-conic-gradient(#fff 0 5deg, #000 5deg 10deg);
+      background-blend-mode: normal, normal, normal, difference;
+    }
+
+    .pattern-layer {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .pattern-bars,
+    .pattern-ramp {
+      position: absolute;
+      inset: 0;
+      display: grid;
+    }
+
+    .pattern-bars {
+      grid-template-columns: repeat(8, 1fr);
+    }
+
+    .pattern-ramp {
+      grid-template-columns: repeat(11, 1fr);
+    }
+
+    .bar,
+    .ramp-step {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .safe-frame,
+    .overscan-frame {
+      position: absolute;
+      inset: 4%;
+      border: 3px solid #ffffff;
+    }
+
+    .safe-frame.inner,
+    .overscan-frame.inner {
+      inset: 10%;
+      border-style: dashed;
+    }
+
+    .corner-labels {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      padding: 20px;
+      color: #fff;
+      font-size: clamp(14px, 1.5vw, 28px);
+      font-weight: 900;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+    }
+
+    .corner-labels span:nth-child(2) {
+      justify-self: end;
+    }
+
+    .corner-labels span:nth-child(3) {
+      align-self: end;
+    }
+
+    .corner-labels span:nth-child(4) {
+      justify-self: end;
+      align-self: end;
+    }
+
+    .center-label {
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      bottom: 80px;
+      transform: translateX(-50%);
+      max-width: min(72vw, 900px);
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: clamp(14px, 1.5vw, 28px);
+      font-weight: 800;
+      text-align: center;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+    }
+
+    .meta {
+      position: absolute;
+      z-index: 4;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 18px 22px;
+      pointer-events: none;
+    }
+
+    .info-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .info-chip {
+      display: none;
+      max-width: min(60vw, 960px);
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: clamp(14px, 1.3vw, 24px);
+      line-height: 1.2;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+    }
+
+    .info-chip.show {
+      display: block;
+    }
+
+    .logos {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 18px;
+      min-height: 70px;
+    }
+
+    .mav-logo {
+      max-width: 210px;
+      max-height: 80px;
+      object-fit: contain;
+    }
+
+    .client-logo {
+      display: none;
+      max-width: 210px;
+      max-height: 80px;
+      object-fit: contain;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .footer {
+      position: absolute;
+      z-index: 4;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 22px;
+      color: #fff;
+      font-size: clamp(12px, 1vw, 20px);
+      text-shadow: 0 1px 7px rgba(0, 0, 0, 0.95);
+      pointer-events: none;
+    }
+
+    .footer > span {
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (display-mode: fullscreen) {
+      aside {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <h1>Test Pattern Generator</h1>
+      <p>Generate a general-purpose display pattern with branding, device labels, optional client logo, and fullscreen support for routing and screen checks.</p>
+
+      <label for="clientName">Client name</label>
+      <input id="clientName" placeholder="Client / event name">
+
+      <label for="deviceName">Device / location label</label>
+      <input id="deviceName" placeholder="Presenter notes">
+
+      <div class="row">
+        <div>
+          <label for="resolutionPreset">Resolution preset</label>
+          <select id="resolutionPreset">
+            <option value="1920x1080">1920x1080</option>
+            <option value="3840x2160">3840x2160</option>
+            <option value="2560x1440">2560x1440</option>
+            <option value="3440x1440">3440x1440</option>
+            <option value="1280x720">1280x720</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div>
+          <label for="patternMode">Pattern mode</label>
+          <select id="patternMode">
+            <option value="grid">Grid and crosshair</option>
+            <option value="safe">Safe margins</option>
+            <option value="bars">Colour bars</option>
+            <option value="grayscale">Greyscale ramp</option>
+            <option value="focus">Focus pattern</option>
+            <option value="overscan">Overscan frame</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="outputWidth">Output width px</label>
+          <input id="outputWidth" type="number" min="1" value="1920">
+        </div>
+        <div>
+          <label for="outputHeight">Output height px</label>
+          <input id="outputHeight" type="number" min="1" value="1080">
+        </div>
+      </div>
+
+      <label for="clientLogo">Client logo</label>
+      <input id="clientLogo" type="file" accept="image/*">
+
+      <div class="button-row">
+        <button id="generateButton">Generate</button>
+        <button id="fullscreenButton" class="secondary">Fullscreen</button>
+      </div>
+
+      <div class="hint">Tip: use this for normal display verification, sharpness checks, safe-area checks, overscan, and confirming the right source is on the right display before moving to the LED wall map.</div>
+    </aside>
+
+    <main>
+      <div class="stage-shell">
+        <section id="stage" class="stage" aria-label="Test pattern generator">
+          <div id="patternSurface" class="pattern-surface grid">
+            <div id="patternLayer" class="pattern-layer"></div>
+          </div>
+          <div class="meta">
+            <div class="info-stack">
+              <div id="clientChip" class="info-chip"></div>
+              <div id="deviceChip" class="info-chip"></div>
+            </div>
+            <div class="logos">
+              <img class="mav-logo" alt="MAV logo" src="https://mav.com.au/wp-content/uploads/2022/09/logo-yw-1.png">
+              <img id="clientLogoPreview" class="client-logo" alt="Client logo">
+            </div>
+          </div>
+          <div id="centerLabel" class="center-label">Presenter notes</div>
+          <div class="footer">
+            <span id="footerLeft">1920x1080 output</span>
+            <span id="footerRight">Grid and crosshair</span>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const presets = {
+      '1920x1080': { width: 1920, height: 1080 },
+      '3840x2160': { width: 3840, height: 2160 },
+      '2560x1440': { width: 2560, height: 1440 },
+      '3440x1440': { width: 3440, height: 1440 },
+      '1280x720': { width: 1280, height: 720 }
+    };
+
+    const patternLabels = {
+      grid: 'Grid and crosshair',
+      safe: 'Safe margins',
+      bars: 'Colour bars',
+      grayscale: 'Greyscale ramp',
+      focus: 'Focus pattern',
+      overscan: 'Overscan frame'
+    };
+
+    const elements = {
+      clientName: document.getElementById('clientName'),
+      deviceName: document.getElementById('deviceName'),
+      resolutionPreset: document.getElementById('resolutionPreset'),
+      patternMode: document.getElementById('patternMode'),
+      outputWidth: document.getElementById('outputWidth'),
+      outputHeight: document.getElementById('outputHeight'),
+      clientLogo: document.getElementById('clientLogo'),
+      clientLogoPreview: document.getElementById('clientLogoPreview'),
+      clientChip: document.getElementById('clientChip'),
+      deviceChip: document.getElementById('deviceChip'),
+      centerLabel: document.getElementById('centerLabel'),
+      footerLeft: document.getElementById('footerLeft'),
+      footerRight: document.getElementById('footerRight'),
+      patternSurface: document.getElementById('patternSurface'),
+      patternLayer: document.getElementById('patternLayer'),
+      stage: document.getElementById('stage'),
+      generateButton: document.getElementById('generateButton'),
+      fullscreenButton: document.getElementById('fullscreenButton')
+    };
+
+    function readNumber(input, fallback) {
+      const value = Number.parseInt(input.value, 10);
+      return Number.isFinite(value) && value > 0 ? value : fallback;
+    }
+
+    function applyPreset() {
+      const preset = presets[elements.resolutionPreset.value];
+      if (!preset) return;
+      elements.outputWidth.value = preset.width;
+      elements.outputHeight.value = preset.height;
+    }
+
+    function syncPreset() {
+      const width = readNumber(elements.outputWidth, 1920);
+      const height = readNumber(elements.outputHeight, 1080);
+
+      for (const [key, preset] of Object.entries(presets)) {
+        if (preset.width === width && preset.height === height) {
+          elements.resolutionPreset.value = key;
+          return;
+        }
+      }
+
+      elements.resolutionPreset.value = 'custom';
+    }
+
+    function updateChip(element, value) {
+      if (!value) {
+        element.textContent = '';
+        element.classList.remove('show');
+        return;
+      }
+
+      element.textContent = value;
+      element.classList.add('show');
+    }
+
+    function updateLogo(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        elements.clientLogoPreview.style.display = 'none';
+        elements.clientLogoPreview.removeAttribute('src');
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      elements.clientLogoPreview.src = objectUrl;
+      elements.clientLogoPreview.style.display = 'block';
+    }
+
+    function patternMarkup(mode) {
+      if (mode === 'bars') {
+        return `
+          <div class="pattern-bars">
+            <div class="bar" style="background:#f7f7f7"></div>
+            <div class="bar" style="background:#fdd835"></div>
+            <div class="bar" style="background:#00acc1"></div>
+            <div class="bar" style="background:#43a047"></div>
+            <div class="bar" style="background:#d81b60"></div>
+            <div class="bar" style="background:#1e88e5"></div>
+            <div class="bar" style="background:#fb8c00"></div>
+            <div class="bar" style="background:#111111"></div>
+          </div>
+        `;
+      }
+
+      if (mode === 'grayscale') {
+        const shades = ['#ffffff', '#e6e6e6', '#d0d0d0', '#b8b8b8', '#9f9f9f', '#868686', '#6d6d6d', '#555555', '#3c3c3c', '#232323', '#000000'];
+        return `
+          <div class="pattern-ramp">
+            ${shades.map((shade) => `<div class="ramp-step" style="background:${shade}"></div>`).join('')}
+          </div>
+        `;
+      }
+
+      if (mode === 'safe') {
+        return `
+          <div class="safe-frame"></div>
+          <div class="safe-frame inner"></div>
+          <div class="corner-labels">
+            <span>5%</span>
+            <span>5%</span>
+            <span>10%</span>
+            <span>10%</span>
+          </div>
+        `;
+      }
+
+      if (mode === 'overscan') {
+        return `
+          <div class="overscan-frame"></div>
+          <div class="overscan-frame inner"></div>
+          <div class="corner-labels">
+            <span>TL</span>
+            <span>TR</span>
+            <span>BL</span>
+            <span>BR</span>
+          </div>
+        `;
+      }
+
+      if (mode === 'focus') {
+        return `
+          <div class="corner-labels">
+            <span>FOCUS</span>
+            <span>FOCUS</span>
+            <span>FOCUS</span>
+            <span>FOCUS</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="safe-frame" style="inset: 3%; border-width: 2px;"></div>
+        <div class="safe-frame inner" style="inset: 12%;"></div>
+      `;
+    }
+
+    function generate() {
+      const width = readNumber(elements.outputWidth, 1920);
+      const height = readNumber(elements.outputHeight, 1080);
+      const client = elements.clientName.value.trim();
+      const device = elements.deviceName.value.trim();
+      const mode = elements.patternMode.value;
+
+      elements.stage.style.aspectRatio = `${width} / ${height}`;
+      elements.patternSurface.className = `pattern-surface ${mode}`;
+      elements.patternLayer.innerHTML = patternMarkup(mode);
+      elements.centerLabel.textContent = device || 'Display output';
+      elements.footerLeft.textContent = `${width}x${height} output`;
+      elements.footerRight.textContent = patternLabels[mode] || 'Pattern';
+
+      updateChip(elements.clientChip, client);
+      updateChip(elements.deviceChip, device);
+      syncPreset();
+    }
+
+    async function fullscreen() {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      if (elements.stage.requestFullscreen) {
+        await elements.stage.requestFullscreen();
+      }
+    }
+
+    elements.resolutionPreset.addEventListener('change', () => {
+      applyPreset();
+      generate();
+    });
+
+    elements.generateButton.addEventListener('click', generate);
+    elements.fullscreenButton.addEventListener('click', fullscreen);
+    elements.clientLogo.addEventListener('change', updateLogo);
+
+    for (const input of document.querySelectorAll('input, select')) {
+      if (input === elements.clientLogo) continue;
+      input.addEventListener('input', () => generate());
+    }
+
+    applyPreset();
+    generate();
+  </script>
+</body>
+</html>

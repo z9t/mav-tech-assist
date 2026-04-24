@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAV Tech Assist Event Timer</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: #151515;
+      --panel-2: #202020;
+      --text: #f7f1df;
+      --muted: #b7af9a;
+      --brand: #ffd84d;
+      --ok: #3fd079;
+      --warn: #ffbd4a;
+      --bad: #ff5c5c;
+      --line: rgba(255, 255, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255, 216, 77, 0.16), transparent 24rem),
+        radial-gradient(circle at 92% 20%, rgba(63, 208, 121, 0.12), transparent 26rem),
+        #050505;
+      font-family: Aptos, Segoe UI, Tahoma, sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      padding: 22px;
+      background: rgba(10, 10, 10, 0.92);
+      border-right: 1px solid var(--line);
+      overflow: auto;
+    }
+
+    main {
+      min-width: 0;
+      padding: 22px;
+      display: grid;
+      place-items: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: var(--text);
+      background: var(--panel);
+      font: inherit;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      accent-color: var(--brand);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .row.thirds {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .toggles {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    .button-row,
+    .adjust-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .adjust-row {
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 14px;
+      color: #171300;
+      background: var(--brand);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    .hint {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255, 216, 77, 0.08);
+      border: 1px solid rgba(255, 216, 77, 0.25);
+      color: #fff0a8;
+      font-size: 13px;
+    }
+
+    .stage-shell {
+      width: min(100%, 1580px);
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 2px solid #ffffff;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(255, 216, 77, 0.15), transparent 22%),
+        radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.07), transparent 18%),
+        radial-gradient(circle at 82% 70%, rgba(63, 208, 121, 0.09), transparent 24%),
+        linear-gradient(135deg, #020202, #090909 58%, #171107);
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.48);
+    }
+
+    .stage.fullscreen {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      border: 0;
+    }
+
+    .meta {
+      position: absolute;
+      z-index: 4;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: start;
+      padding: 20px 24px;
+      pointer-events: none;
+    }
+
+    .info-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .info-chip {
+      display: none;
+      max-width: min(64vw, 980px);
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: clamp(14px, 1.25vw, 24px);
+      line-height: 1.2;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+    }
+
+    .info-chip.show {
+      display: block;
+    }
+
+    .logos {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 18px;
+      min-height: 70px;
+    }
+
+    .mav-logo {
+      max-width: 220px;
+      max-height: 84px;
+      object-fit: contain;
+    }
+
+    .mav-logo.hidden {
+      display: none;
+    }
+
+    .client-logo {
+      display: none;
+      max-width: 210px;
+      max-height: 80px;
+      object-fit: contain;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .center {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      padding: clamp(32px, 6vw, 96px);
+    }
+
+    .timer-card {
+      width: min(84%, 1220px);
+      display: grid;
+      justify-items: center;
+      gap: clamp(12px, 2vw, 20px);
+      padding: clamp(22px, 4vw, 48px);
+      border-radius: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(5, 5, 5, 0.38);
+      backdrop-filter: blur(10px);
+      text-align: center;
+      box-shadow: 0 26px 70px rgba(0, 0, 0, 0.28);
+    }
+
+    .timer-label {
+      color: #fff5c9;
+      font-size: clamp(22px, 2.2vw, 42px);
+      line-height: 1.08;
+      font-weight: 800;
+      text-wrap: balance;
+    }
+
+    .time-readout {
+      font-family: Aptos Mono, Consolas, Menlo, monospace;
+      font-size: clamp(62px, 9vw, 180px);
+      line-height: 0.9;
+      font-weight: 900;
+      letter-spacing: -0.08em;
+      text-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+    }
+
+    .time-readout.warning {
+      color: var(--warn);
+    }
+
+    .time-readout.danger,
+    .time-readout.overtime {
+      color: var(--bad);
+    }
+
+    .status-pill {
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-size: clamp(14px, 1.4vw, 26px);
+      font-weight: 800;
+      text-wrap: balance;
+    }
+
+    .status-pill.ready {
+      color: #fff7d2;
+    }
+
+    .status-pill.running {
+      color: var(--ok);
+    }
+
+    .status-pill.paused {
+      color: var(--warn);
+    }
+
+    .status-pill.overtime {
+      color: var(--bad);
+    }
+
+    .live-clock {
+      display: none;
+      color: #fff;
+      font-size: clamp(16px, 1.5vw, 28px);
+      font-weight: 700;
+      opacity: 0.92;
+    }
+
+    .live-clock.show {
+      display: block;
+    }
+
+    .footer {
+      position: absolute;
+      z-index: 4;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 22px;
+      color: #fff;
+      font-size: clamp(12px, 1vw, 20px);
+      text-shadow: 0 1px 7px rgba(0, 0, 0, 0.95);
+      pointer-events: none;
+    }
+
+    .footer > span {
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 5, 5, 0.58);
+      backdrop-filter: blur(10px);
+    }
+
+    .mode-rows .countdown-target-row,
+    .mode-rows .duration-row {
+      display: none;
+    }
+
+    .mode-rows.target .countdown-target-row,
+    .mode-rows.duration .duration-row {
+      display: grid;
+    }
+
+    @media (max-width: 960px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .button-row,
+      .adjust-row,
+      .row,
+      .row.thirds {
+        grid-template-columns: 1fr;
+      }
+
+      .timer-card {
+        width: min(94%, 1220px);
+      }
+    }
+
+    @media (display-mode: fullscreen) {
+      aside {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <h1>Event Timer</h1>
+      <p>Create a fullscreen timer for show starts, doors, session changes, rehearsals, or stage cues with MAV branding, optional client logo, and overtime support.</p>
+
+      <label for="clientName">Client / show name</label>
+      <input id="clientName" placeholder="Client / show name">
+
+      <label for="eventName">Event name</label>
+      <input id="eventName" placeholder="Awards night 2026">
+
+      <label for="timerLabel">Timer label</label>
+      <input id="timerLabel" placeholder="Doors open">
+
+      <label for="timerMode">Timer mode</label>
+      <select id="timerMode">
+        <option value="target">Countdown to clock time</option>
+        <option value="duration">Countdown duration</option>
+        <option value="countup">Count up</option>
+      </select>
+
+      <div id="modeRows" class="mode-rows target">
+        <div class="countdown-target-row">
+          <label for="targetDateTime">Target date & time</label>
+          <input id="targetDateTime" type="datetime-local">
+        </div>
+
+        <div class="duration-row row thirds">
+          <div>
+            <label for="durationHours">Hours</label>
+            <input id="durationHours" type="number" min="0" value="0">
+          </div>
+          <div>
+            <label for="durationMinutes">Minutes</label>
+            <input id="durationMinutes" type="number" min="0" value="45">
+          </div>
+          <div>
+            <label for="durationSeconds">Seconds</label>
+            <input id="durationSeconds" type="number" min="0" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="warningMinutes">Warning minutes</label>
+          <input id="warningMinutes" type="number" min="0" value="10">
+        </div>
+        <div>
+          <label for="dangerMinutes">Danger minutes</label>
+          <input id="dangerMinutes" type="number" min="0" value="2">
+        </div>
+      </div>
+
+      <label for="zeroLabel">Zero / overtime label</label>
+      <input id="zeroLabel" placeholder="Event live" value="Event live">
+
+      <label for="clientLogo">Client logo</label>
+      <input id="clientLogo" type="file" accept="image/*">
+
+      <div class="toggles">
+        <label class="toggle" for="showClock">
+          <input id="showClock" type="checkbox" checked>
+          <span>Show current clock</span>
+        </label>
+        <label class="toggle" for="showMavLogo">
+          <input id="showMavLogo" type="checkbox" checked>
+          <span>Show MAV logo</span>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="startButton">Start</button>
+        <button id="pauseButton" class="secondary">Pause</button>
+      </div>
+
+      <div class="button-row">
+        <button id="resetButton" class="secondary">Reset</button>
+        <button id="fullscreenButton" class="secondary">Fullscreen</button>
+      </div>
+
+      <div class="button-row">
+        <button id="clearSavedButton" class="secondary">Clear saved settings</button>
+        <span></span>
+      </div>
+
+      <div class="adjust-row">
+        <button id="minusFiveButton" class="secondary">-5m</button>
+        <button id="minusOneButton" class="secondary">-1m</button>
+        <button id="plusOneButton" class="secondary">+1m</button>
+        <button id="plusFiveButton" class="secondary">+5m</button>
+      </div>
+
+      <div class="hint">Tip: use countdown to a real clock time when the show must hit a hard start, or countdown duration when you just need a segment timer. After zero it keeps counting in red so you can see overtime immediately. Timer settings are saved in this browser until you clear them.</div>
+    </aside>
+
+    <main>
+      <div class="stage-shell">
+        <section id="stage" class="stage" aria-label="Event timer">
+          <div class="meta">
+            <div class="info-stack">
+              <div id="clientChip" class="info-chip"></div>
+              <div id="eventChip" class="info-chip"></div>
+            </div>
+            <div class="logos">
+              <img id="mavLogo" class="mav-logo" alt="MAV logo" src="https://mav.com.au/wp-content/uploads/2022/09/logo-yw-1.png">
+              <img id="clientLogoPreview" class="client-logo" alt="Client logo">
+            </div>
+          </div>
+
+          <div class="center">
+            <div class="timer-card">
+              <div id="timerLabelDisplay" class="timer-label">Doors open</div>
+              <div id="timeReadout" class="time-readout">00:45:00</div>
+              <div id="statusPill" class="status-pill ready">Ready to start</div>
+              <div id="liveClock" class="live-clock show">Current time 12:00:00 PM</div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <span id="footerLeft">Countdown to clock time</span>
+            <span id="footerRight">Target 3:00 PM</span>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const storageKey = 'mav-tech-assist-event-timer';
+
+    const elements = {
+      clientName: document.getElementById('clientName'),
+      eventName: document.getElementById('eventName'),
+      timerLabel: document.getElementById('timerLabel'),
+      timerMode: document.getElementById('timerMode'),
+      targetDateTime: document.getElementById('targetDateTime'),
+      durationHours: document.getElementById('durationHours'),
+      durationMinutes: document.getElementById('durationMinutes'),
+      durationSeconds: document.getElementById('durationSeconds'),
+      warningMinutes: document.getElementById('warningMinutes'),
+      dangerMinutes: document.getElementById('dangerMinutes'),
+      zeroLabel: document.getElementById('zeroLabel'),
+      clientLogo: document.getElementById('clientLogo'),
+      clientLogoPreview: document.getElementById('clientLogoPreview'),
+      showClock: document.getElementById('showClock'),
+      showMavLogo: document.getElementById('showMavLogo'),
+      modeRows: document.getElementById('modeRows'),
+      startButton: document.getElementById('startButton'),
+      pauseButton: document.getElementById('pauseButton'),
+      resetButton: document.getElementById('resetButton'),
+      fullscreenButton: document.getElementById('fullscreenButton'),
+      clearSavedButton: document.getElementById('clearSavedButton'),
+      minusFiveButton: document.getElementById('minusFiveButton'),
+      minusOneButton: document.getElementById('minusOneButton'),
+      plusOneButton: document.getElementById('plusOneButton'),
+      plusFiveButton: document.getElementById('plusFiveButton'),
+      mavLogo: document.getElementById('mavLogo'),
+      clientChip: document.getElementById('clientChip'),
+      eventChip: document.getElementById('eventChip'),
+      timerLabelDisplay: document.getElementById('timerLabelDisplay'),
+      timeReadout: document.getElementById('timeReadout'),
+      statusPill: document.getElementById('statusPill'),
+      liveClock: document.getElementById('liveClock'),
+      footerLeft: document.getElementById('footerLeft'),
+      footerRight: document.getElementById('footerRight'),
+      stage: document.getElementById('stage')
+    };
+
+    const state = {
+      intervalId: null,
+      running: false,
+      paused: false,
+      mode: 'target',
+      liveTargetMs: null,
+      liveStartMs: null,
+      pausedRemainingMs: null,
+      pausedElapsedMs: 0
+    };
+
+    function readNumber(input, fallback) {
+      const value = Number.parseInt(input.value, 10);
+      return Number.isFinite(value) && value >= 0 ? value : fallback;
+    }
+
+    function formatDateTimeLocal(date) {
+      const pad = value => String(value).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function ensureDefaultTarget() {
+      if (elements.targetDateTime.value) return;
+      const defaultDate = new Date(Date.now() + (45 * 60 * 1000));
+      elements.targetDateTime.value = formatDateTimeLocal(defaultDate);
+    }
+
+    function saveSettings() {
+      const payload = {
+        clientName: elements.clientName.value,
+        eventName: elements.eventName.value,
+        timerLabel: elements.timerLabel.value,
+        timerMode: elements.timerMode.value,
+        targetDateTime: elements.targetDateTime.value,
+        durationHours: elements.durationHours.value,
+        durationMinutes: elements.durationMinutes.value,
+        durationSeconds: elements.durationSeconds.value,
+        warningMinutes: elements.warningMinutes.value,
+        dangerMinutes: elements.dangerMinutes.value,
+        zeroLabel: elements.zeroLabel.value,
+        showClock: elements.showClock.checked,
+        showMavLogo: elements.showMavLogo.checked
+      };
+
+      window.localStorage.setItem(storageKey, JSON.stringify(payload));
+    }
+
+    function loadSettings() {
+      try {
+        const raw = window.localStorage.getItem(storageKey);
+        if (!raw) return;
+        const payload = JSON.parse(raw);
+
+        for (const [key, value] of Object.entries(payload)) {
+          if (!(key in elements)) continue;
+          if (typeof elements[key].checked === 'boolean') {
+            elements[key].checked = Boolean(value);
+          }
+          else if (value !== null && value !== undefined) {
+            elements[key].value = value;
+          }
+        }
+      }
+      catch (error) {
+        console.warn('Could not restore timer settings', error);
+      }
+    }
+
+    function updateChip(element, value) {
+      if (!value) {
+        element.textContent = '';
+        element.classList.remove('show');
+        return;
+      }
+
+      element.textContent = value;
+      element.classList.add('show');
+    }
+
+    function readDurationMs() {
+      const hours = readNumber(elements.durationHours, 0);
+      const minutes = readNumber(elements.durationMinutes, 0);
+      const seconds = readNumber(elements.durationSeconds, 0);
+      return (((hours * 60) + minutes) * 60 + seconds) * 1000;
+    }
+
+    function setDurationFromMs(valueMs) {
+      const totalSeconds = Math.max(0, Math.round(valueMs / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      elements.durationHours.value = hours;
+      elements.durationMinutes.value = minutes;
+      elements.durationSeconds.value = seconds;
+    }
+
+    function formatDisplayDuration(valueMs, prefixSign = false) {
+      const sign = valueMs < 0 ? '-' : (prefixSign && valueMs > 0 ? '+' : '');
+      const absoluteMs = Math.abs(valueMs);
+      const totalSeconds = Math.floor(absoluteMs / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      const hourText = String(hours).padStart(2, '0');
+      const minuteText = String(minutes).padStart(2, '0');
+      const secondText = String(seconds).padStart(2, '0');
+      return `${sign}${hourText}:${minuteText}:${secondText}`;
+    }
+
+    function formatClock(date) {
+      return new Intl.DateTimeFormat([], {
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit'
+      }).format(date);
+    }
+
+    function formatTargetLabel(timestamp) {
+      if (!Number.isFinite(timestamp)) return 'No target set';
+
+      return new Intl.DateTimeFormat([], {
+        weekday: 'short',
+        hour: 'numeric',
+        minute: '2-digit'
+      }).format(new Date(timestamp));
+    }
+
+    function updateModeVisibility() {
+      const mode = elements.timerMode.value;
+      elements.modeRows.className = `mode-rows ${mode}`;
+    }
+
+    function clearTimerLoop() {
+      if (state.intervalId) {
+        window.clearInterval(state.intervalId);
+        state.intervalId = null;
+      }
+    }
+
+    function startTimerLoop() {
+      clearTimerLoop();
+      state.intervalId = window.setInterval(render, 250);
+    }
+
+    function currentTargetMs() {
+      const value = new Date(elements.targetDateTime.value).getTime();
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function adjustCountdownByMinutes(minutes) {
+      const deltaMs = minutes * 60 * 1000;
+      const mode = elements.timerMode.value;
+
+      if (mode === 'countup') {
+        return;
+      }
+
+      if (mode === 'duration') {
+        const nextMs = Math.max(0, readDurationMs() + deltaMs);
+        setDurationFromMs(nextMs);
+        if (state.running && !state.paused) {
+          state.liveTargetMs += deltaMs;
+        }
+        if (state.paused && Number.isFinite(state.pausedRemainingMs)) {
+          state.pausedRemainingMs = Math.max(0, state.pausedRemainingMs + deltaMs);
+        }
+      }
+      else {
+        const baseTarget = currentTargetMs() || Date.now();
+        const nextTarget = new Date(baseTarget + deltaMs);
+        elements.targetDateTime.value = formatDateTimeLocal(nextTarget);
+        if (state.running && !state.paused) {
+          state.liveTargetMs += deltaMs;
+        }
+        if (state.paused && Number.isFinite(state.pausedRemainingMs)) {
+          state.pausedRemainingMs += deltaMs;
+        }
+      }
+
+      saveSettings();
+      render();
+    }
+
+    function startTimer() {
+      const mode = elements.timerMode.value;
+      state.mode = mode;
+      state.running = true;
+      state.paused = false;
+      state.pausedRemainingMs = null;
+      state.pausedElapsedMs = 0;
+
+      if (mode === 'target') {
+        const targetMs = currentTargetMs();
+        state.liveTargetMs = Number.isFinite(targetMs) ? targetMs : Date.now();
+        state.liveStartMs = null;
+      }
+      else if (mode === 'duration') {
+        state.liveTargetMs = Date.now() + readDurationMs();
+        state.liveStartMs = null;
+      }
+      else {
+        state.liveStartMs = Date.now();
+        state.liveTargetMs = null;
+      }
+
+      startTimerLoop();
+      render();
+    }
+
+    function pauseOrResumeTimer() {
+      if (!state.running) {
+        startTimer();
+        return;
+      }
+
+      if (!state.paused) {
+        const now = Date.now();
+
+        if (state.mode === 'countup') {
+          state.pausedElapsedMs = Math.max(0, now - state.liveStartMs);
+        }
+        else {
+          state.pausedRemainingMs = state.liveTargetMs - now;
+        }
+
+        state.paused = true;
+        clearTimerLoop();
+        render();
+        return;
+      }
+
+      const now = Date.now();
+      if (state.mode === 'countup') {
+        state.liveStartMs = now - state.pausedElapsedMs;
+      }
+      else {
+        state.liveTargetMs = now + state.pausedRemainingMs;
+      }
+
+      state.paused = false;
+      startTimerLoop();
+      render();
+    }
+
+    function resetTimer() {
+      clearTimerLoop();
+      state.running = false;
+      state.paused = false;
+      state.mode = elements.timerMode.value;
+      state.liveTargetMs = null;
+      state.liveStartMs = null;
+      state.pausedRemainingMs = null;
+      state.pausedElapsedMs = 0;
+      render();
+    }
+
+    function clearSavedSettings() {
+      window.localStorage.removeItem(storageKey);
+      elements.clientName.value = '';
+      elements.eventName.value = '';
+      elements.timerLabel.value = '';
+      elements.timerMode.value = 'target';
+      elements.targetDateTime.value = '';
+      elements.durationHours.value = '0';
+      elements.durationMinutes.value = '45';
+      elements.durationSeconds.value = '0';
+      elements.warningMinutes.value = '10';
+      elements.dangerMinutes.value = '2';
+      elements.zeroLabel.value = 'Event live';
+      elements.showClock.checked = true;
+      elements.showMavLogo.checked = true;
+      elements.clientLogo.value = '';
+      elements.clientLogoPreview.style.display = 'none';
+      elements.clientLogoPreview.removeAttribute('src');
+      ensureDefaultTarget();
+      resetTimer();
+    }
+
+    function updateLogo(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        elements.clientLogoPreview.style.display = 'none';
+        elements.clientLogoPreview.removeAttribute('src');
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      elements.clientLogoPreview.src = objectUrl;
+      elements.clientLogoPreview.style.display = 'block';
+    }
+
+    function render() {
+      const mode = elements.timerMode.value;
+      const now = new Date();
+      const clientName = elements.clientName.value.trim();
+      const eventName = elements.eventName.value.trim();
+      const timerLabel = elements.timerLabel.value.trim() || 'Event timer';
+      const zeroLabel = elements.zeroLabel.value.trim() || 'Event live';
+      const warningMs = readNumber(elements.warningMinutes, 10) * 60 * 1000;
+      const dangerMs = readNumber(elements.dangerMinutes, 2) * 60 * 1000;
+      let statusClass = 'ready';
+      let statusText = 'Ready to start';
+      let footerRight = '';
+      let displayMs = 0;
+      let readoutClass = 'time-readout';
+
+      updateModeVisibility();
+      saveSettings();
+
+      elements.timerLabelDisplay.textContent = timerLabel;
+      updateChip(elements.clientChip, clientName);
+      updateChip(elements.eventChip, eventName);
+
+      elements.mavLogo.classList.toggle('hidden', !elements.showMavLogo.checked);
+      elements.liveClock.classList.toggle('show', elements.showClock.checked);
+      elements.liveClock.textContent = `Current time ${formatClock(now)}`;
+
+      if (mode === 'countup') {
+        if (state.running) {
+          displayMs = state.paused ? state.pausedElapsedMs : Math.max(0, Date.now() - state.liveStartMs);
+          statusClass = state.paused ? 'paused' : 'running';
+          statusText = state.paused ? 'Paused' : zeroLabel;
+        }
+        else {
+          displayMs = 0;
+        }
+
+        footerRight = 'Count up timer';
+      }
+      else if (mode === 'duration') {
+        if (state.running) {
+          const remainingMs = state.paused ? state.pausedRemainingMs : state.liveTargetMs - Date.now();
+          if (remainingMs < 0) {
+            displayMs = Math.abs(remainingMs);
+            statusClass = 'overtime';
+            statusText = `${zeroLabel} | Overtime`;
+            readoutClass = 'time-readout overtime';
+          }
+          else {
+            displayMs = remainingMs;
+            if (state.paused) {
+              statusClass = 'paused';
+              statusText = 'Paused';
+            }
+            else if (remainingMs <= dangerMs) {
+              statusClass = 'running';
+              statusText = 'Danger window';
+              readoutClass = 'time-readout danger';
+            }
+            else if (remainingMs <= warningMs) {
+              statusClass = 'running';
+              statusText = 'Warning window';
+              readoutClass = 'time-readout warning';
+            }
+            else {
+              statusClass = 'running';
+              statusText = 'Running';
+            }
+          }
+        }
+        else {
+          displayMs = readDurationMs();
+        }
+
+        footerRight = `Preset ${formatDisplayDuration(readDurationMs())}`;
+      }
+      else {
+        const previewTarget = currentTargetMs();
+
+        if (state.running) {
+          const remainingMs = state.paused ? state.pausedRemainingMs : state.liveTargetMs - Date.now();
+          if (remainingMs < 0) {
+            displayMs = Math.abs(remainingMs);
+            statusClass = 'overtime';
+            statusText = `${zeroLabel} | Overtime`;
+            readoutClass = 'time-readout overtime';
+          }
+          else {
+            displayMs = remainingMs;
+            if (state.paused) {
+              statusClass = 'paused';
+              statusText = 'Paused';
+            }
+            else if (remainingMs <= dangerMs) {
+              statusClass = 'running';
+              statusText = 'Danger window';
+              readoutClass = 'time-readout danger';
+            }
+            else if (remainingMs <= warningMs) {
+              statusClass = 'running';
+              statusText = 'Warning window';
+              readoutClass = 'time-readout warning';
+            }
+            else {
+              statusClass = 'running';
+              statusText = 'Running';
+            }
+          }
+        }
+        else if (Number.isFinite(previewTarget)) {
+          displayMs = Math.max(0, previewTarget - Date.now());
+        }
+
+        footerRight = Number.isFinite(previewTarget) ? `Target ${formatTargetLabel(previewTarget)}` : 'No target set';
+      }
+
+      elements.timeReadout.className = readoutClass;
+      elements.timeReadout.textContent = formatDisplayDuration(displayMs, statusClass === 'overtime');
+      elements.statusPill.className = `status-pill ${statusClass}`;
+      elements.statusPill.textContent = statusText;
+
+      const modeLabel = mode === 'target'
+        ? 'Countdown to clock time'
+        : mode === 'duration'
+          ? 'Countdown duration'
+          : 'Count up';
+
+      elements.footerLeft.textContent = `${modeLabel}${state.running ? state.paused ? ' | paused' : ' | live' : ' | preview'}`;
+      elements.footerRight.textContent = footerRight;
+      elements.pauseButton.textContent = state.paused ? 'Resume' : 'Pause';
+    }
+
+    async function fullscreen() {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      if (elements.stage.requestFullscreen) {
+        await elements.stage.requestFullscreen();
+      }
+    }
+
+    function bindEvents() {
+      for (const input of document.querySelectorAll('input, select')) {
+        if (input === elements.clientLogo) continue;
+        input.addEventListener('input', render);
+        input.addEventListener('change', render);
+      }
+
+      elements.clientLogo.addEventListener('change', event => {
+        updateLogo(event);
+        render();
+      });
+
+      elements.startButton.addEventListener('click', startTimer);
+      elements.pauseButton.addEventListener('click', pauseOrResumeTimer);
+      elements.resetButton.addEventListener('click', resetTimer);
+      elements.fullscreenButton.addEventListener('click', fullscreen);
+      elements.clearSavedButton.addEventListener('click', clearSavedSettings);
+      elements.minusFiveButton.addEventListener('click', () => adjustCountdownByMinutes(-5));
+      elements.minusOneButton.addEventListener('click', () => adjustCountdownByMinutes(-1));
+      elements.plusOneButton.addEventListener('click', () => adjustCountdownByMinutes(1));
+      elements.plusFiveButton.addEventListener('click', () => adjustCountdownByMinutes(5));
+    }
+
+    loadSettings();
+    ensureDefaultTarget();
+    bindEvents();
+    render();
+  </script>
+</body>
+</html>
