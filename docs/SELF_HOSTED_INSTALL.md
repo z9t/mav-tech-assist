@@ -74,6 +74,7 @@ Example copy list:
 - `web/event-timer.html`
 - `web/led-wall-test-generator.html`
 - `web/network-helper.html`
+- `web/assets/mav-logo.png`
 - `docs/daily-use.html`
 - `docs/troubleshooting.html`
 - `docs/deployment-and-qa.html`
@@ -97,6 +98,7 @@ Example filesystem layout:
 - `/srv/mav-tech-assist/event-timer.html`
 - `/srv/mav-tech-assist/led-wall-test-generator.html`
 - `/srv/mav-tech-assist/network-helper.html`
+- `/srv/mav-tech-assist/assets/mav-logo.png`
 - `/srv/mav-tech-assist/MAV-Tech-Assist-USB.zip`
 - `/srv/mav-tech-assist/docs/daily-use.html`
 - `/srv/mav-tech-assist/docs/troubleshooting.html`

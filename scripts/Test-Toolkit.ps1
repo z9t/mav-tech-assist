@@ -115,6 +115,10 @@ function Test-StaticSiteFiles {
             Text = "backgroundStyle"
         },
         @{
+            Path = "web\assets\mav-logo.png"
+            Text = ""
+        },
+        @{
             Path = "web\test-pattern-generator.html"
             Text = "Test Pattern Generator"
         },
@@ -156,6 +160,11 @@ function Test-StaticSiteFiles {
         $path = Join-Path $Root $check.Path
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
             Add-Failure "Missing static file: $($check.Path)"
+            continue
+        }
+
+        if ([string]::IsNullOrEmpty($check.Text)) {
+            Add-Pass "Static file present: $($check.Path)"
             continue
         }
 
@@ -321,7 +330,8 @@ function Test-UsbBundle {
             "web/test-pattern-generator.html",
             "web/event-timer.html",
             "web/led-wall-test-generator.html",
-            "web/network-helper.html"
+            "web/network-helper.html",
+            "web/assets/mav-logo.png"
         )
 
         foreach ($entry in $expectedEntries) {

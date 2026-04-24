@@ -35,6 +35,7 @@ Copy these files into the site root:
 - `web/event-timer.html`
 - `web/led-wall-test-generator.html`
 - `web/network-helper.html`
+- `web/assets/mav-logo.png`
 - `MAV-Tech-Assist-USB.zip`
 
 Copy these files into `/srv/showtime/docs`:
@@ -56,6 +57,7 @@ scp web/test-pattern-generator.html "${SHOWTIME_TARGET}:/srv/showtime/"
 scp web/event-timer.html "${SHOWTIME_TARGET}:/srv/showtime/"
 scp web/led-wall-test-generator.html "${SHOWTIME_TARGET}:/srv/showtime/"
 scp web/network-helper.html "${SHOWTIME_TARGET}:/srv/showtime/"
+scp web/assets/mav-logo.png "${SHOWTIME_TARGET}:/srv/showtime/assets/"
 scp MAV-Tech-Assist-USB.zip "${SHOWTIME_TARGET}:/srv/showtime/"
 scp docs/daily-use.html docs/troubleshooting.html docs/deployment-and-qa.html docs/handbook.css "${SHOWTIME_TARGET}:/srv/showtime/docs/"
 ```
